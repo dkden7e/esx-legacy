@@ -25,8 +25,10 @@ if not Config.UseDeferrals then
 	function EnableGui(state)
 		SetNuiFocus(state, state)
 		guiEnabled = state
+		local count = 0
 		while not ready do
 			Citizen.Wait(500)
+			count = count + 1; print("ready", count)
 		end
 		SendNUIMessage({
 			type = "enableui",
@@ -38,8 +40,13 @@ if not Config.UseDeferrals then
 	AddEventHandler('esx_identity:showRegisterIdentity', function()
 		TriggerEvent('esx_skin:resetFirstSpawn')
 
+		print("esx_identity:showRegisterIdentity")
+
 		if not ESX.GetPlayerData().dead then
+			print("^1not ESX.GetPlayerData().dead")
 			EnableGui(true)
+		else
+			print("^2ESX.GetPlayerData().dead")
 		end
 	end)
 
