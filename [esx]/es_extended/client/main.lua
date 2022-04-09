@@ -42,8 +42,8 @@ AddEventHandler('esx:playerLoaded', function(xPlayer, isNew, skin)
 			end
 
 			TriggerEvent('esx:loadingScreenOff')
-			ShutdownLoadingScreen()
-			ShutdownLoadingScreenNui()
+			--ShutdownLoadingScreen()
+			--ShutdownLoadingScreenNui()
 			FreezeEntityPosition(ESX.PlayerData.ped, false)
 		end)
 	end
