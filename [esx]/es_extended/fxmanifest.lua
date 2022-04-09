@@ -2,6 +2,8 @@ fx_version 'adamant'
 
 game 'gta5'
 
+lua54 'on'
+
 description 'ES Extended'
 
 version '1.6.5'
@@ -26,7 +28,9 @@ server_scripts {
 
 	'common/modules/math.lua',
 	'common/modules/table.lua',
-	'common/functions.lua'
+	'common/functions.lua',
+
+	'server/onesync.lua',
 }
 
 client_scripts {
