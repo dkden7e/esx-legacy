@@ -1,4 +1,4 @@
-ESX.RegisterCommand('setcoords', 'admin', function(xPlayer, args, showError)
+ESX.RegisterCommand('setcoords', 'staff2', function(xPlayer, args, showError)
 	xPlayer.setCoords({x = args.x, y = args.y, z = args.z})
 end, false, {help = _U('command_setcoords'), validate = true, arguments = {
 	{name = 'x', help = _U('command_setcoords_x'), type = 'number'},
@@ -6,7 +6,7 @@ end, false, {help = _U('command_setcoords'), validate = true, arguments = {
 	{name = 'z', help = _U('command_setcoords_z'), type = 'number'}
 }})
 
-ESX.RegisterCommand('setjob', 'admin', function(xPlayer, args, showError)
+ESX.RegisterCommand('setjob', 'staff2', function(xPlayer, args, showError)
 	if ESX.DoesJobExist(args.job, args.grade) then
 		args.playerId.setJob(args.job, args.grade)
 	else
@@ -18,16 +18,38 @@ end, true, {help = _U('command_setjob'), validate = true, arguments = {
 	{name = 'grade', help = _U('command_setjob_grade'), type = 'number'}
 }})
 
-ESX.RegisterCommand('car', 'admin', function(xPlayer, args, showError)
-	if not args.car then args.car = "Prototipo" end
-	xPlayer.triggerEvent('esx:spawnVehicle', args.car)
+ESX.RegisterCommand('car', 'staff3', function(xPlayer, args, showError)
+	local playerPed = GetPlayerPed(xPlayer.source)
+	local vehicle = GetVehiclePedIsIn(playerPed)
+	if vehicle then DeleteEntity(vehicle) end
+
+	ESX.OneSync.SpawnVehicle(args.car or `baller2`, GetEntityCoords(playerPed), GetEntityHeading(playerPed), function(car)
+		local timeout = 50
+		repeat
+			Wait(0)
+			timeout -= 1
+			SetPedIntoVehicle(playerPed, car, -1)
+		until GetVehiclePedIsIn(playerPed, false) ~= 0 or timeout < 1
+		Citizen.Wait(100)
+		TriggerClientEvent('cd_garage:AddKeys', xPlayer.source, tostring(GetVehicleNumberPlateText(car)))
+	end)
+
 end, false, {help = _U('command_car'), validate = false, arguments = {
 	{name = 'car', help = _U('command_car_car'), type = 'any'}
 }})
 
 ESX.RegisterCommand({'cardel', 'dv'}, 'admin', function(xPlayer, args, showError)
-	if not args.radius then args.radius = 4 end
-	xPlayer.triggerEvent('esx:deleteVehicle', args.radius)
+	local playerPed = GetPlayerPed(xPlayer.source)
+	local vehicle = GetVehiclePedIsIn(playerPed)
+
+	if vehicle ~= 0 then
+		DeleteEntity(vehicle)
+	else
+		vehicle = ESX.OneSync.GetVehiclesInArea(GetEntityCoords(playerPed), tonumber(args.radius) or 3)
+		for i = 1, #vehicle do
+			DeleteEntity(vehicle[i].entity)
+		end
+	end
 end, false, {help = _U('command_cardel'), validate = false, arguments = {
 	{name = 'radius', help = _U('command_cardel_radius'), type = 'any'}
 }})
@@ -104,7 +126,7 @@ ESX.RegisterCommand({'clear', 'cls'}, 'user', function(xPlayer, args, showError)
 	xPlayer.triggerEvent('chat:clear')
 end, false, {help = _U('command_clear')})
 
-ESX.RegisterCommand({'clearall', 'clsall'}, 'admin', function(xPlayer, args, showError)
+ESX.RegisterCommand({'clearall', 'clsall'}, 'staff3', function(xPlayer, args, showError)
 	TriggerClientEvent('chat:clear', -1)
 end, false, {help = _U('command_clearall')})
 
@@ -137,32 +159,32 @@ end, true, {help = _U('command_setgroup'), validate = true, arguments = {
 	{name = 'group', help = _U('command_setgroup_group'), type = 'string'},
 }})
 
-ESX.RegisterCommand('save', 'admin', function(xPlayer, args, showError)
+ESX.RegisterCommand('save', 'staff2', function(xPlayer, args, showError)
 	Core.SavePlayer(args.playerId)
 	print("[^2Info^0] Saved Player!")
 end, true, {help = _U('command_save'), validate = true, arguments = {
 	{name = 'playerId', help = _U('commandgeneric_playerid'), type = 'player'}
 }})
 
-ESX.RegisterCommand('saveall', 'admin', function(xPlayer, args, showError)
+ESX.RegisterCommand('saveall', 'staff4', function(xPlayer, args, showError)
 	Core.SavePlayers()
 end, true, {help = _U('command_saveall')})
 
-ESX.RegisterCommand('group', {"user", "admin"}, function(xPlayer, args, showError)
+ESX.RegisterCommand('group', {"user", "staff1"}, function(xPlayer, args, showError)
 	print(xPlayer.getName()..", You are currently: ^5".. xPlayer.getGroup() .. "^0")
 end, true)
 
-ESX.RegisterCommand('job', {"user", "admin"}, function(xPlayer, args, showError)
+ESX.RegisterCommand('job', {"user", "staff1"}, function(xPlayer, args, showError)
 print(xPlayer.getName()..", You are currently: ^5".. xPlayer.getJob().name.. "^0 - ^5".. xPlayer.getJob().grade_label .. "^0")
 end, true)
 
-ESX.RegisterCommand('info', {"user", "admin"}, function(xPlayer, args, showError)
+ESX.RegisterCommand('info', {"user", "staff1"}, function(xPlayer, args, showError)
 	local job = xPlayer.getJob().name
 	local jobgrade = xPlayer.getJob().grade_name
 	print("^2ID : ^5"..xPlayer.source.." ^0| ^2Name:^5"..xPlayer.getName().." ^0 | ^2Group:^5"..xPlayer.getGroup().."^0 | ^2Job:^5".. job.."^0")
 	end, true)
 
-ESX.RegisterCommand('coords', "admin", function(xPlayer, args, showError)
+ESX.RegisterCommand('coords', "staff1", function(xPlayer, args, showError)
 	local coords = GetEntityCoords(GetPlayerPed(xPlayer.source), false)
   local heading = GetEntityHeading(GetPlayerPed(xPlayer.source))
 	print("Coords - Vector3: ^5".. vector3(coords.x,coords.y,coords.z).. "^0")
@@ -171,7 +193,7 @@ end, true)
 
 
 
-ESX.RegisterCommand('tpm', "admin", function(xPlayer, args, showError)
+ESX.RegisterCommand('tpm', "staff1", function(xPlayer, args, showError)
 	xPlayer.triggerEvent("esx:tpm")
 end, true)
 
@@ -207,11 +229,11 @@ end, true, {help = _U('kill'), validate = true, arguments = {
 {name = 'playerId', help = _U('commandgeneric_playerid'), type = 'player'}
 }})
 
-ESX.RegisterCommand("noclip", 'admin', function(xPlayer, args, showError)
-	xPlayer.triggerEvent('esx:noclip')
-end, false)
+--ESX.RegisterCommand("noclip", 'admin', function(xPlayer, args, showError)
+--	xPlayer.triggerEvent('esx:noclip')
+--end, false)
 
-ESX.RegisterCommand('players', "admin", function(xPlayer, args, showError)
+ESX.RegisterCommand('players', "staff1", function(xPlayer, args, showError)
 	local xAll = ESX.GetPlayers()
 	print("^5"..#xAll.." ^2online player(s)^0")
 	for i=1, #xAll, 1 do
