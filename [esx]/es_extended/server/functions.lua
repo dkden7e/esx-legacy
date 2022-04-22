@@ -334,3 +334,82 @@ function Core.IsPlayerAdmin(playerId)
 
 	return false
 end
+
+-- SCOPE MANAGEMENT BY PICHOT <3
+ESX.Scopes = {}
+
+AddEventHandler("playerEnteredScope", function(data)
+    local playerEntering, player = data["player"], data["for"]
+
+    if not ESX.Scopes[player] then
+        ESX.Scopes[player] = {}
+    end
+
+    ESX.Scopes[player][playerEntering] = true
+end)
+
+AddEventHandler("playerLeftScope", function(data)
+    local playerLeaving, player = data["player"], data["for"]
+
+    if not ESX.Scopes[player] then return end
+    ESX.Scopes[player][playerLeaving] = nil
+end)
+
+AddEventHandler("playerDropped", function()
+    local intSource = source
+
+    if not intSource then return end
+
+	Citizen.Wait(5000)
+
+	if not GetPlayerName(intSource) then
+
+    	ESX.Scopes[intSource] = nil
+
+    	for owner, tbl in pairs(ESX.Scopes) do
+    	    if tbl[intSource] then
+    	        tbl[intSource] = nil
+    	    end
+    	end
+	end
+end)
+
+ESX.GetPlayerScope = function(intSource)
+    return ESX.Scopes[tostring(intSource)]
+end
+
+ESX.TriggerScopeEvent = function(eventName, scopeOwner, ...)
+    local targets = ESX.Scopes[tostring(scopeOwner)]
+    if targets then
+        for target, _ in pairs(targets) do
+            TriggerClientEvent(eventName, target, ...)
+        end
+    end
+
+    TriggerClientEvent(eventName, scopeOwner, ...)
+end
+
+AddEventHandler("esx:triggerScopeEvent", function(eventName, scopeOwner, ...)
+	ESX.TriggerScopeEvent(eventName, scopeOwner, ...)
+end)
+
+ESX.TriggerRadiusEvent = function(eventName, loc, dist, ...)
+	if loc then
+		if type(loc) == "number" and GetPlayerName(loc) then
+			loc = GetEntityCoords(GetPlayerPed(loc))
+		end
+		if type(loc) == "vector3" then
+			for _, xPlayer in ipairs(ESX.Players) do
+				local coords = xPlayer.getCoords(true)
+				if coords ~= nil and #(coords-loc) <= ((dist ~= nil and tonumber(dist) and dist > 0) and dist+0.0 or 100.0) then
+					xPlayer.triggerEvent(eventName, ...)
+				end
+			end
+		end
+	end
+end
+
+AddEventHandler("esx:triggerRadiusEvent", function(eventName, loc, dist, ...)
+	ESX.TriggerRadiusEvent(eventName, loc, dist, ...)
+end)
+
