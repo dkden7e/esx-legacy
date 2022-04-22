@@ -9,10 +9,23 @@ end
 function CreateExtendedPlayer(playerId, identifier, group, accounts, inventory, weight, job, loadout, name, coords)
 	local self = {}
 
+	local steam, discord
+	for k,v in ipairs(GetPlayerIdentifiers(playerId)) do
+		if not steam and string.match(v, "steam") then
+            steam = v
+		end
+		if not discord and string.match(v, 'discord:') then
+			discord = v
+		end
+	end
+
 	self.accounts = accounts
 	self.coords = coords
 	self.group = group
 	self.identifier = identifier
+	self.steam = steam
+	self.discord = discord
+	self.name = name
 	self.inventory = inventory
 	self.job = job
 	self.loadout = loadout
@@ -22,6 +35,7 @@ function CreateExtendedPlayer(playerId, identifier, group, accounts, inventory, 
 	self.variables = {}
 	self.weight = weight
 	self.maxWeight = Config.MaxWeight
+	self.isAdmin = IsPlayerAceAllowed(playerId, 'staff')
 	if Config.Multichar then self.license = 'steam'.. identifier:sub(identifier:find(':'), identifier:len()) else self.license = 'steam:'..identifier end
 
 	ExecuteCommand(('add_principal identifier.%s group.%s'):format(self.license, self.group))

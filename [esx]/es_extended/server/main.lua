@@ -287,7 +287,10 @@ function loadESXPlayer(identifier, playerId, isNew)
 		loadout = xPlayer.getLoadout(),
 		maxWeight = xPlayer.getMaxWeight(),
 		money = xPlayer.getMoney(),
-		dead = false
+		dead = false,
+		isAdmin = xPlayer.isAdmin,
+		steam = steam,
+		discord = discord
 	}, isNew, userData.skin)
 
 	if not Config.OxInventory then
@@ -305,7 +308,11 @@ AddEventHandler('chatMessage', function(playerId, author, message)
 	if message:sub(1, 1) == '/' and playerId > 0 then
 		CancelEvent()
 		local commandName = message:sub(1):gmatch("%w+")()
-		xPlayer.showNotification(_U('commanderror_invalidcommand', commandName))
+		if xPlayer then
+			xPlayer.showNotification(_U('commanderror_invalidcommand', commandName))
+		else
+			print(_U('commanderror_invalidcommand', commandName))
+		end
 	end
 end)
 
