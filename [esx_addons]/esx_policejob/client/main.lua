@@ -50,10 +50,15 @@ function OpenCloakroomMenu()
 	local grade = ESX.PlayerData.job.grade_name
 
 	local elements = {
-		{label = _U('citizen_wear'), value = 'citizen_wear'},
-		{label = _U('bullet_wear'), uniform = 'bullet_wear'},
-		{label = _U('gilet_wear'), uniform = 'gilet_wear'},
-		{label = _U('police_wear'), uniform = grade}
+		{label = '<span style="color:#fff;"><span style="color:#7BFE1E;">● ╍╍║</span> UNIFORMES POLICIA LOCAL<span style="color:#7BFE1E;">║╍╍ ●</span></span>', value = 0},
+		{label = 'Uniforme de manga corta', value = 'plc_corta_wear'},
+		{label = '<span style="color:#fff;"><span style="color:#7BFE1E;">● ╍╍╍╍║</span> CHALECOS <span style="color:#7BFE1E;">║╍╍╍╍ ●</span></span>', value = 0 },
+		{label = "Chaleco antibalas bajo la camisa", value = 'bullet_sinchaleco_wear' },
+		{label = '<span style="color:#fff;"><span style="color:#7BFE1E;">● ╍╍╍╍║</span> ACCESORIOS <span style="color:#7BFE1E;">║╍╍╍╍ ●</span></span>', value = 0 },
+		{label = "Gorro de oficial", value = 'gorro_plc_wear' },
+		{label = "Casco de moto", value = 'casco_plc_wear' },
+		{label = "Quitar gorra/casco", value = 'cap_wear' },
+		{label = '<span style="color:#7BFE1E;">● ╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍ ●</span>', value = 0 }
 	}
 
 	if Config.EnableCustomPeds then
@@ -1278,31 +1283,31 @@ CreateThread(function()
 					end
 				end
 
-				for i=1, #v.Vehicles, 1 do
-					local distance = #(playerCoords - v.Vehicles[i].Spawner)
-
-					if distance < Config.DrawDistance then
-						DrawMarker(Config.MarkerType.Vehicles, v.Vehicles[i].Spawner, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, Config.MarkerColor.r, Config.MarkerColor.g, Config.MarkerColor.b, 100, false, true, 2, true, false, false, false)
-						letSleep = false
-
-						if distance < Config.MarkerSize.x then
-							isInMarker, currentStation, currentPart, currentPartNum = true, k, 'Vehicles', i
-						end
-					end
-				end
-
-				for i=1, #v.Helicopters, 1 do
-					local distance =  #(playerCoords - v.Helicopters[i].Spawner)
-
-					if distance < Config.DrawDistance then
-						DrawMarker(Config.MarkerType.Helicopters, v.Helicopters[i].Spawner, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, Config.MarkerColor.r, Config.MarkerColor.g, Config.MarkerColor.b, 100, false, true, 2, true, false, false, false)
-						letSleep = false
-
-						if distance < Config.MarkerSize.x then
-							isInMarker, currentStation, currentPart, currentPartNum = true, k, 'Helicopters', i
-						end
-					end
-				end
+				--for i=1, #v.Vehicles, 1 do
+				--	local distance = #(playerCoords - v.Vehicles[i].Spawner)
+				--
+				--	if distance < Config.DrawDistance then
+				--		DrawMarker(Config.MarkerType.Vehicles, v.Vehicles[i].Spawner, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, Config.MarkerColor.r, Config.MarkerColor.g, Config.MarkerColor.b, 100, false, true, 2, true, false, false, false)
+				--		letSleep = false
+				--
+				--		if distance < Config.MarkerSize.x then
+				--			isInMarker, currentStation, currentPart, currentPartNum = true, k, 'Vehicles', i
+				--		end
+				--	end
+				--end
+				--
+				--for i=1, #v.Helicopters, 1 do
+				--	local distance =  #(playerCoords - v.Helicopters[i].Spawner)
+				--
+				--	if distance < Config.DrawDistance then
+				--		DrawMarker(Config.MarkerType.Helicopters, v.Helicopters[i].Spawner, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, Config.MarkerColor.r, Config.MarkerColor.g, Config.MarkerColor.b, 100, false, true, 2, true, false, false, false)
+				--		letSleep = false
+				--
+				--		if distance < Config.MarkerSize.x then
+				--			isInMarker, currentStation, currentPart, currentPartNum = true, k, 'Helicopters', i
+				--		end
+				--	end
+				--end
 
 				if Config.EnablePlayerManagement and ESX.PlayerData.job.grade_name == 'boss' then
 					for i=1, #v.BossActions, 1 do
@@ -1586,3 +1591,128 @@ if ESX.PlayerLoaded and ESX.PlayerData.job == 'police' then
 		TriggerServerEvent('esx_policejob:forceBlip')
 	end)
 end
+
+local allJobs, policeJobs, mechanicJobs = {
+	['reporter'] = true,
+	['police'] = true,
+	['police2'] = true,
+	['sheriff'] = true,
+	['fib'] = true,
+	['sheriff2'] = true,
+	['mechanic'] = true,
+	['bennys'] = true,
+	['taxi'] = true,
+	['ambulance'] = true,
+	['guayota'] = true,
+	['chatarra'] = true,
+  }, {
+	['police'] = true,
+	['police2'] = true,
+	['sheriff'] = true,
+	['fib'] = true,
+	['sheriff2'] = true,
+  }, {
+	['mechanic'] = true,
+	['bennys'] = true,
+	['guayota'] = true,
+	['chatarra'] = true,
+  }
+
+RegisterCommand("entrarenservicio",function(source, args)
+	--print("Se ejecuta 455")
+	local job = ESX.PlayerData.job.name
+	local allowed = (allJobs[job] ~= nil)
+	local isPolice = (policeJobs[job] ~= nil)
+	local isMechanic = (mechanicJobs[job] ~= nil)
+	local service = (isPolice and 'police' or (isMechanic and 'mechanic' or job))
+	--print("Se ejecuta 461, service: ", service)
+	if allowed then
+	  --print("Se ejecuta 463")
+	  if isPolice and args[1] == "salir1234" then
+		  ESX.TriggerServerCallback('esx_service:isInService', function(isInService)
+			  if isInService then
+
+				  playerInService = false
+
+				  local notification = {
+					  title    = _U('service_anonunce'),
+					  subject  = '',
+					  msg      = _U('service_out_announce', GetPlayerName(PlayerId())),
+					  iconType = 1
+				  }
+
+				  TriggerServerEvent('esx_service:notifyAllInService', notification, service)
+
+				  TriggerServerEvent('esx_service:disableService', service)
+				  --TriggerEvent('esx_policejob:updateBlip')
+				  ESX.ShowNotification(_U('service_out'))
+--				  setRadioAllowance(false)
+			  end
+		  end, service)
+		  return
+	  end
+		--print("Se ejecuta 487")
+	  --if PlayerData.job ~= nil and Config.MaxInService ~= -1 then
+		  if isPolice then
+			  local serviceOk = 'waiting'
+			  --print("Se ejecuta 491")
+			  ESX.TriggerServerCallback('esx_service:isInService', function(isInService)
+				  --print("Se ejecuta 493")
+				  if not isInService then
+			  
+					  ESX.TriggerServerCallback('esx_service:enableService', function(canTakeService, maxInService, inServiceCount)
+						  --print("Se ejecuta 497")
+						  if not canTakeService then
+							  ESX.ShowNotification(_U('service_max', inServiceCount, maxInService))
+						  else
+							  --print("Se ejecuta 501")
+							  serviceOk = true
+							  playerInService = true
+			  
+							  local notification = {
+								  title    = _U('service_anonunce'),
+								  subject  = '',
+								  msg      = _U('service_in_announce', GetPlayerName(PlayerId())),
+								  iconType = 1
+							  }
+			  
+							  TriggerServerEvent('esx_service:notifyAllInService', notification, service)
+							  --TriggerEvent('esx_policejob:updateBlip')
+							  ESX.ShowNotification(_U('service_in'))
+--							  setRadioAllowance(true)
+						  end
+					  end, service)
+			  
+				  else
+					--print("Se ejecuta 519")
+					  serviceOk = true
+				  end
+			  end, service)
+		  else
+			--print("Se ejecuta 522")
+			  ESX.TriggerServerCallback('esx_service:isInService', function(isInService)
+					--print("Se ejecuta 524")
+				  if not isInService then
+					  ESX.TriggerServerCallback('esx_service:enableService', function(canTakeService, maxInService, inServiceCount)
+						print("Entrando en servicio...")
+						  if not canTakeService then
+							  ESX.ShowNotification(_U('service_max', inServiceCount, maxInService))
+						  end
+					  end, service)
+				  else
+					  print("Saliendo de servicio...")
+					  TriggerServerEvent('esx_service:disableService', service)
+				  end
+			  end, service)
+		  end
+		  while type(serviceOk) == 'string' do
+			  Citizen.Wait(5)
+		  end
+		  
+		  -- if we couldn't enter service don't let the player get changed
+		  if not serviceOk then
+			  return
+		  end
+	  --end
+	end
+  end,false)
