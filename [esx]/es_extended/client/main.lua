@@ -7,6 +7,8 @@ CreateThread(function()
 			exports.spawnmanager:setAutoSpawn(false)
 			DoScreenFadeOut(0)
 			Wait(500)
+			-- somewhere *once* during initialization
+			DecorRegister("Player_Vehicle", 3)
 			TriggerServerEvent('esx:onPlayerJoined')
 			break
 		end
@@ -246,21 +248,22 @@ end)
 
 RegisterNetEvent('esx:spawnVehicle')
 AddEventHandler('esx:spawnVehicle', function(vehicle)
-	ESX.TriggerServerCallback("esx:isUserAdmin", function(admin)
-		if admin then
-			local model = (type(vehicle) == 'number' and vehicle or GetHashKey(vehicle))
-
-			if IsModelInCdimage(model) then
-				local playerCoords, playerHeading = GetEntityCoords(ESX.PlayerData.ped), GetEntityHeading(ESX.PlayerData.ped)
-
-				ESX.Game.SpawnVehicle(model, playerCoords, playerHeading, function(vehicle)
-					TaskWarpPedIntoVehicle(ESX.PlayerData.ped, vehicle, -1)
-				end)
-			else
-				ESX.ShowNotification('Invalid vehicle model.')
+	local model = (type(vehicle) == 'number' and vehicle or GetHashKey(vehicle))
+	
+	if IsModelInCdimage(model) then
+		local playerCoords, playerHeading = GetEntityCoords(ESX.PlayerData.ped), GetEntityHeading(ESX.PlayerData.ped)
+	
+		ESX.Game.SpawnVehicle(model, playerCoords, playerHeading, function(vehicle)
+			-- on a vehicle
+			if DecorIsRegisteredAsType("Player_Vehicle", 3) then
+			    DecorSetInt(vehicle, "Player_Vehicle", -1)
 			end
-		end
-	end)
+			TaskWarpPedIntoVehicle(ESX.PlayerData.ped, vehicle, -1)
+			TriggerEvent('cd_garage:AddKeys', exports['cd_garage']:GetPlate(vehicle))
+		end)
+	else
+		ESX.ShowNotification('Invalid vehicle model.')
+	end
 end)
 
 if not Config.OxInventory then
@@ -507,93 +510,117 @@ end
 
 RegisterNetEvent("esx:tpm")
 AddEventHandler("esx:tpm", function()
-local PlayerPedId = PlayerPedId
-local GetEntityCoords = GetEntityCoords
-local GetGroundZFor_3dCoord = GetGroundZFor_3dCoord
+    local WaypointHandle = GetFirstBlipInfoId(8)
+	playerPed = PlayerPedId()
+	local vehicle = GetVehiclePedIsIn(playerPed, false)
+	local oldCoords = GetEntityCoords(playerPed)
+    if DoesBlipExist(WaypointHandle) then
+        local waypointCoords = GetBlipInfoIdCoord(WaypointHandle)
 
-	ESX.TriggerServerCallback("esx:isUserAdmin", function(admin)
-		if admin then
-			local blipMarker = GetFirstBlipInfoId(8)
-			if not DoesBlipExist(blipMarker) then
-					ESX.ShowNotification('No Waypoint Set.', true, false, 140)
-					return 'marker'
-			end
-	
-			-- Fade screen to hide how clients get teleported.
-			DoScreenFadeOut(650)
-			while not IsScreenFadedOut() do
-					Wait(0)
-			end
-	
-			local ped, coords = PlayerPedId(), GetBlipInfoIdCoord(blipMarker)
-			local vehicle = GetVehiclePedIsIn(ped, false)
-			local oldCoords = GetEntityCoords(ped)
-	
-			-- Unpack coords instead of having to unpack them while iterating.
-			-- 825.0 seems to be the max a player can reach while 0.0 being the lowest.
-			local x, y, groundZ, Z_START = coords['x'], coords['y'], 850.0, 950.0
-			local found = false
-			if vehicle > 0 then
+        for height = 1, 870, 1 do
+            SetPedCoordsKeepVehicle(playerPed, waypointCoords["x"], waypointCoords["y"], height + 0.0)
+
+            local foundGround, zPos = GetGroundZFor_3dCoord(waypointCoords["x"], waypointCoords["y"], height + 0.0)
+
+            if foundGround then
+                SetPedCoordsKeepVehicle(playerPed, waypointCoords["x"], waypointCoords["y"], height + 0.0)
+
+				for i = 1, 100, 1 do
+					Wait(20)
+					if HasCollisionLoadedAroundEntity(playerPed) then
+						break
+					end
+					RequestCollisionAtCoord(waypointCoords["x"], waypointCoords["y"], height + 0.0)
+					SetPedCoordsKeepVehicle(playerPed, waypointCoords["x"], waypointCoords["y"], height + 0.0)
+				end
+				ESX.ShowNotification('Teletransporte exitoso', true, false, 140)
+                break
+            end
+
+            Citizen.Wait(5)
+			if height >= 869 then
+
+				-- Unpack coords instead of having to unpack them while iterating.
+				-- 825.0 seems to be the max a player can reach while 0.0 being the lowest.
+				local x, y, groundZ, Z_START = waypointCoords['x'], waypointCoords['y'], 850.0, 950.0
+				local found = false
+				if vehicle > 0 then
 					FreezeEntityPosition(vehicle, true)
-			else
-					FreezeEntityPosition(ped, true)
-			end
-	
-			for i = Z_START, 0, -25.0 do
+				else
+					FreezeEntityPosition(playerPed, true)
+				end
+
+				DoScreenFadeOut(650)
+				while not IsScreenFadedOut() do
+					Wait(0)
+				end
+		
+				for i = Z_START, 0, -25.0 do
 					local z = i
 					if (i % 2) ~= 0 then
-							z = Z_START - i
+						z = Z_START - i
 					end
-	
+		
 					NewLoadSceneStart(x, y, z, x, y, z, 50.0, 0)
 					local curTime = GetGameTimer()
 					while IsNetworkLoadingScene() do
-							if GetGameTimer() - curTime > 1000 then
-									break
-							end
-							Wait(0)
+						if GetGameTimer() - curTime > 1000 then
+							break
+						end
+						Wait(0)
 					end
 					NewLoadSceneStop()
-					SetPedCoordsKeepVehicle(ped, x, y, z)
-	
-					while not HasCollisionLoadedAroundEntity(ped) do
-							RequestCollisionAtCoord(x, y, z)
-							if GetGameTimer() - curTime > 1000 then
-									break
-							end
-							Wait(0)
+					SetPedCoordsKeepVehicle(playerPed, x, y, z)
+		
+					while not HasCollisionLoadedAroundEntity(playerPed) do
+						RequestCollisionAtCoord(x, y, z)
+						if GetGameTimer() - curTime > 1000 then
+							break
+						end
+						Wait(0)
 					end
-	
+		
 					-- Get ground coord. As mentioned in the natives, this only works if the client is in render distance.
 					found, groundZ = GetGroundZFor_3dCoord(x, y, z, false)
 					if found then
-							Wait(0)
-							SetPedCoordsKeepVehicle(ped, x, y, groundZ)
-							break
+						Wait(0)
+						SetPedCoordsKeepVehicle(playerPed, x, y, groundZ)
+						break
 					end
 					Wait(0)
-			end
-	
-			-- Remove black screen once the loop has ended.
-			DoScreenFadeIn(650)
-			if vehicle > 0 then
+				end
+		
+				-- Remove black screen once the loop has ended.
+				DoScreenFadeIn(650)
+				if vehicle > 0 then
 					FreezeEntityPosition(vehicle, false)
-			else
-					FreezeEntityPosition(ped, false)
-			end
-	
-			if not found then
+				else
+					FreezeEntityPosition(playerPed, false)
+				end
+		
+				if not found then
 					-- If we can't find the coords, set the coords to the old ones.
 					-- We don't unpack them before since they aren't in a loop and only called once.
-					SetPedCoordsKeepVehicle(ped, oldCoords['x'], oldCoords['y'], oldCoords['z'] - 1.0)
-					ESX.ShowNotification('Successfully Teleported', true, false, 140)
+					found, groundZ = GetGroundZFor_3dCoord(x, y, z, true)
+					if found then
+						SetPedCoordsKeepVehicle(playerPed, x, y, groundZ)
+						ESX.ShowNotification('Teletransporte exitoso', true, false, 140)
+					else
+						SetPedCoordsKeepVehicle(playerPed, oldCoords['x'], oldCoords['y'], oldCoords['z'] - 1.0)
+						ESX.ShowNotification('No se pudo teletransportar.', true, false, 140)
+						return 'marker'
+					end
+				else
+					-- If Z coord was found, set coords in found coords.
+					SetPedCoordsKeepVehicle(playerPed, x, y, groundZ)
+					ESX.ShowNotification('Teletransporte exitoso', true, false, 140)
+				end
 			end
-	
-			-- If Z coord was found, set coords in found coords.
-			SetPedCoordsKeepVehicle(ped, x, y, groundZ)
-			ESX.ShowNotification('Successfully Teleported', true, false, 140)
-		end
-	end)
+        end
+    else
+		ESX.ShowNotification('No se encontró un marcador activo.', true, false, 140)
+		return 'marker'
+    end
 end)
 
 local noclip = false
