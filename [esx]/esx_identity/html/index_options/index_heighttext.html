@@ -45,7 +45,7 @@
 
 			function checkFirstName() {
 				var value = myFirstName.value;
-				if(value.trim().match(/^[a-zA-Z][0-9a-zA-Z .,'-]*$/) == null) {
+				if(value.trim().match(/^[a-zñçáéíóúàèìòùâêîôûäëïöüãõåæøœA-ZÑÇÁÉÍÓÚÀÈÌÒÙÂÊÎÔÛÄËÏÖÜÃÕÅÆØŒß][0-9a-zñçáéíóúàèìòùâêîôûäëïöüãõåæøœA-ZÑÇÁÉÍÓÚÀÈÌÒÙÂÊÎÔÛÄËÏÖÜÃÕÅÆØŒß'- .,'-]*$/) == null) {
 					myFirstName.style.backgroundColor = '#E06666';
 					myFirstName.style.color = 'black';
 				}
@@ -63,7 +63,7 @@
 
 			function checkLastName() {
 				var value = myLastName.value;
-				if(value.trim().match(/^[a-zA-Z][0-9a-zA-Z .,'-]*$/) == null) {
+				if(value.trim().match(/^[a-zñçáéíóúàèìòùâêîôûäëïöüãõåæøœA-ZÑÇÁÉÍÓÚÀÈÌÒÙÂÊÎÔÛÄËÏÖÜÃÕÅÆØŒß][0-9a-zñçáéíóúàèìòùâêîôûäëïöüãõåæøœA-ZÑÇÁÉÍÓÚÀÈÌÒÙÂÊÎÔÛÄËÏÖÜÃÕÅÆØŒß'- .,'-]*$/) == null) {
 					myLastName.style.backgroundColor = '#E06666';
 					myLastName.style.color = 'black';
 				}

@@ -435,7 +435,7 @@ function convertFirstLetterToUpper(str)
 end
 
 function checkAlphanumeric(str)
-	str = string.lower(str):gsub('[ñáéíóúüÑÁÉÍÓÚÜ]+', 'x')
+	str = str:gsub("[ñçáéíóúàèìòùâêîôûäëïöüãõåæøœÑÇÁÉÍÓÚÀÈÌÒÙÂÊÎÔÛÄËÏÖÜÃÕÅÆØŒß .,'-]+", 'x')
 	return (string.match(str, "%W"))
 end
 
@@ -484,11 +484,11 @@ function checkDate(str)
 end
 
 ESX.RegisterCommand({"chardel", "register"}, 'support', function(xPlayer, args, showError)
-	deleteIdentity(xPlayer)
-	xPlayer.showNotification(_U('deleted_character'))
-	playerIdentity[xPlayer.identifier] = nil
-	alreadyRegistered[xPlayer.identifier] = false
-	TriggerClientEvent('esx_identity:showRegisterIdentity', xPlayer.source)
+	deleteIdentity(args.playerId)
+	args.playerId.showNotification(_U('deleted_character'))
+	playerIdentity[args.playerId.identifier] = nil
+	alreadyRegistered[args.playerId.identifier] = false
+	TriggerClientEvent('esx_identity:showRegisterIdentity', args.playerId.source)
 	local hora = os.date("%X")
 	if server == "TENCITY" then 
 	TriggerEvent('DiscordBot:ToDiscord', GetConvar("webhook_staffcmd", "1"), '[🤖] TENDERETE CITY ~ ACCIONES DEL STAFF (HORA: ' .. hora .. ')', xPlayer.name .. " [ID:" .. xPlayer.source .. "] ha abierto/cerrado el menú de registro del usuario " .. args.playerId.name .. " [ID:" .. args.playerId.source .. "].", 'steam', true, xPlayer.source)
