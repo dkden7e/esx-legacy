@@ -1,42 +1,42 @@
 var tableauQuestion = [
 	{
-		question: "If you're going 80 km/h, and you're approaching a residential area you must:",
-		propositionA: "You accelerate",
-		propositionB: "You keep your speed, if you do not pass other vehicles",
-		propositionC: "You slow down",
-		propositionD: "You keep your speed",
+		question: "Si vas a 80 km/h y te acercas a una zona residencial debes:",
+		propositionA: "Acelerar",
+		propositionB: "Mantener tu velocidad, si no pasas a otros vehículos",
+		propositionC: "Reducir tu velocidad",
+		propositionD: "Mantener tu velocidad",
 		reponse: "C"
 	},
 
 	{
-		question: "If you're turning right at a traffic light, but see a pedestrian crossing what do you do:",
-		propositionA: "You pass the pedestrian",
-		propositionB: "You check that there is no other vehicles around",
-		propositionC: "You wait until the pedestrian has crossed",
-		propositionD: "You shoot the pedestrian and continue to drive",
-		reponse: "C"
-	},
-
-	{
-		question: "Without any prior indication, the speed in a residential area is: __ km/h",
-		propositionA: "30 km/h",
-		propositionB: "50 km/h",
-		propositionC: "40 km/h",
-		propositionD: "60 km/h",
-		reponse: "B"
-	},
-
-	{
-		question: "Before every lane change you must:",
-		propositionA: "Check your mirrors",
-		propositionB: "Check your blind spots",
-		propositionC: "Signal your intentions",
-		propositionD: "All of the above",
+		question: "Antes de cada cambio de carril debes:",
+		propositionA: "Revisar tus espejos",
+		propositionB: "Revisar tus puntos ciegos",
+		propositionC: "Señalar tus intenciones",
+		propositionD: "Todas las anteriores son correctas",
 		reponse: "D"
 	},
 
 	{
-		question: "What blood alcohol level is classified as driving while intoxicated?",
+		question: "¿Cuándo puedes seguir conduciendo en un semáforo?",
+		propositionA: "Cuando está verde",
+		propositionB: "Cuando no hay nadie en la intersección",
+		propositionC: "Cuando estás en una zona escolar",
+		propositionD: "Cuando es verde y/o amarillo",
+		reponse: "D"
+	},
+
+	{
+		question: "Si estás girando a la derecha en un semáforo, pero ve un peatón cruzando, ¿qué haces?",
+		propositionA: "Atropellas al peatón",
+		propositionB: "Compruebas que no hay otros vehículos alrededor",
+		propositionC: "Esperas hasta que el peatón haya cruzado",
+		propositionD: "Disparas al peatón y sigues conduciendo como buen calvo terrorista",
+		reponse: "C"
+	},
+
+	{
+		question: "¿Qué nivel de alcohol en la sangre se clasifica como conducir en estado de ebriedad?",
 		propositionA: "0.05%",
 		propositionB: "0.18%",
 		propositionC: "0.08%",
@@ -45,47 +45,92 @@ var tableauQuestion = [
 	},
 
 	{
-		question: "When can you continue to drive at a traffic light?",
-		propositionA: "When it is green",
-		propositionB: "When there is nobody in the intersection",
-		propositionC: "You are in a school zone",
-		propositionD: "When it is green and / or red and you're turning right",
+		question: "¿Puede hacer algo por ocultar o modificar la matrícula de su vehículo?",
+		propositionA: "Sí, las matrículas se pueden quitar",
+		propositionB: "Las matrículas no se pueden quitar, pero sí se pueden ocultar.",
+		propositionC: "Las matrículas se pueden falsificar",
+		propositionD: "No, de ninguna manera. Las matrículas son siempre visibles",
 		reponse: "D"
 	},
 
 	{
-		question: "A pedestrian has a do not cross signal, what do you do?",
-		propositionA: "You let them pass",
-		propositionB: "You observe before continuing",
-		propositionC: "You wave to tell them to cross",
-		propositionD: "You continue because your traffic light is green",
-		reponse: "D"
-	},
-
-	{
-		question: "What is allowed when passing another vehicle",
-		propositionA: "You follow it closely to pass it faster",
-		propositionB: "You pass it without leaving the roadway",
-		propositionC: "You drive on the opposite side of the road to pass",
-		propositionD: "You exceed the speed limit to pass them",
-		reponse: "C"
-	},
-
-	{
-		question: "You are driving on a highway which indicates a maximum speed of 120 km/h. But most trafficers drive at 125 km/h, so you should not drive faster than:",
-		propositionA: "120 km/h",
-		propositionB: "125 km/h",
-		propositionC: "130 km/h",
-		propositionD: "110 km/h",
+		question: "¿Qué debe hacer si un conductor delante de usted permanece a la espera de que el semáforo se ponga en verde?",
+		propositionA: "Espero pacientemente a que el semáforo se ponga en verde para continuar mi marcha",
+		propositionB: "Le adelanto bruscamente y le increpo porque no hace falta esperar a que se ponga en verde",
+		propositionC: "Tomo nota de su matrícula y le denuncio por obstruir el tráfico",
+		propositionD: "Le aprieto al acelerador y le jodo un espejo retrovisor con la mano bien abierta, por parguela",
 		reponse: "A"
 	},
 
 	{
-		question: "When you are overtaken by another vehicle it is important NOT to:",
-		propositionA: "Slow Down",
-		propositionB: "Check your mirrors",
-		propositionC: "Watch other drivers",
-		propositionD: "Increase your speed",
+		question: "¿Cuál es la velocidad máxima en la que se puede circular en zona residencial?",
+		propositionA: "La velocidad máxima es de 50 km/h",
+		propositionB: "La velocidad máxima es de 60 km/h",
+		propositionC: "La velocidad máxima es de 70 km/h",
+		propositionD: "La velocidad máxima es de 80 km/h",
+		reponse: "A"
+	},
+
+	{
+		question: "Se encuentra circulando con el vehículo visiblemente en malas condiciones. ¿Qué debe hacer?",
+		propositionA: "Si solo tengo los cristales rotos argumento que tengo puesto el aire acondicionado",
+		propositionB: "Nada porque los negros del barrio me van a estallar el vehículo cuando regrese",
+		propositionC: "Acudir a un taller tan pronto como me sea posible",
+		propositionD: "No es necesario acudir a un taller salvo que el vehículo no pueda moverse",
+		reponse: "C"
+	},
+
+	{
+		question: "¿Cuál es la edad mínima para conducir?",
+		propositionA: "La edad mínima es de 13 años",
+		propositionB: "La edad mínima es de 16 años",
+		propositionC: "La edad mínima es de 18 años",
+		propositionD: "La edad mínima es de 28 añoS",
+		reponse: "C"
+	},
+
+	{
+		question: "¿Cómo se debe interpretar la luz ámbar fija en los semáforos?",
+		propositionA: "Acelerando y pasando el semáforo antes de que se ponga rojo",
+		propositionB: "Reduciendo la velocidad, y extremado la precaución",
+		propositionC: "Como si de una Luz Roja se tratase, y pararse en el semáforo",
+		propositionD: "Cambiándose de carril, por un corte de circulación en la vía",
+		reponse: "C"
+	},
+
+	{
+		question: "Un peatón tiene una señal de no cruzar, ¿qué haces?",
+		propositionA: "Le dejas pasar",
+		propositionB: "Observas antes de continuar",
+		propositionC: "Saludas para decirle que cruce",
+		propositionD: "Continúas porque tu semáforo está en verde",
+		reponse: "D"
+	},
+
+	{
+		question: "¿Que está permitido al adelantar a otro vehículo?",
+		propositionA: "Lo sigues de cerca para adelantarlo más rápido",
+		propositionB: "Lo adelantas sin salir de la calzada",
+		propositionC: "Conduces por el lado opuesto de la carretera para adelantarlo",
+		propositionD: "Excedes el límite de velocidad para adelantarlo",
+		reponse: "C"
+	},
+
+	{
+		question: "Está conduciendo en una autopista que indica una velocidad máxima de 120 Km/h. Pero la mayoría de los conductores conducen a 125 Km/h, por lo que no debe conducir más rápido que:",
+		propositionA: "120 Km/h",
+		propositionB: "125 Km/h",
+		propositionC: "130 Km/h",
+		propositionD: "110 Km/h",
+		reponse: "A"
+	},
+
+	{
+		question: "Cuando te adelanta otro vehículo es importante NO:",
+		propositionA: "Reducir tu velocidad",
+		propositionB: "Revisar tus espejos",
+		propositionC: "Tener cuidado con otros conductores",
+		propositionD: "Aumentar tu velocidad",
 		reponse: "D"
 	},
 ]

@@ -66,6 +66,7 @@ function StartDriveTest(type)
 		TaskWarpPedIntoVehicle(playerPed, vehicle, -1)
 		SetVehicleFuelLevel(vehicle, 100.0)
 		DecorSetFloat(vehicle, "_FUEL_LEVEL", GetVehicleFuelLevel(vehicle))
+		TriggerEvent('cd_garage:AddKeys', exports['cd_garage']:GetPlate(vehicle))
 	end)
 end
 
