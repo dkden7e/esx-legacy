@@ -78,9 +78,13 @@ function ESX.SetPlayerData(key, val)
 end
 
 function ESX.ShowNotification(msg)
-	BeginTextCommandThefeedPost('STRING')
-	AddTextComponentSubstringPlayerName(msg)
-	EndTextCommandThefeedPostTicker(0,1)
+	if GetResourceState("okokNotify") == "started" then
+		exports['okokNotify']:Alert("Aviso", msg, 5000, 'info')
+	else
+		BeginTextCommandThefeedPost('STRING')
+		AddTextComponentSubstringPlayerName(msg)
+		EndTextCommandThefeedPostTicker(0,1)
+	end
 end
 
 function ESX.ShowAdvancedNotification(sender, subject, msg, textureDict, iconType, flash, saveToBrief, hudColorIndex)
@@ -569,10 +573,20 @@ function ESX.Game.GetVehicleInDirection()
 	return nil
 end
 
-function ESX.Game.GetVehicleProperties(vehicle)
+ESX.Game.GetVehicleProperties = function(vehicle)
 	if DoesEntityExist(vehicle) then
 		local colorPrimary, colorSecondary = GetVehicleColours(vehicle)
 		local pearlescentColor, wheelColor = GetVehicleExtraColours(vehicle)
+		local paintType1, whoCaresColor1, nnn = GetVehicleModColor_1(vehicle)
+		local paintType2, whoCaresColor2 = GetVehicleModColor_2(vehicle)
+		local color3 = {}
+		local color4 = {}
+		color3[1], color3[2], color3[3] = GetVehicleCustomPrimaryColour(vehicle)
+		color4[1], color4[2], color4[3] = GetVehicleCustomSecondaryColour(vehicle)
+		local pearlescentColor, wheelColor = GetVehicleExtraColours(vehicle)
+		local dshcolor = GetVehicleDashboardColour(vehicle)
+		local intcolor = GetVehicleInteriorColour(vehicle)
+		local drift = GetDriftTyresEnabled(vehicle)
 		local extras = {}
 
 		for extraId=0, 12 do
@@ -596,10 +610,16 @@ function ESX.Game.GetVehicleProperties(vehicle)
 			dirtLevel         = ESX.Math.Round(GetVehicleDirtLevel(vehicle), 1),
 			color1            = colorPrimary,
 			color2            = colorSecondary,
-
+			color3            = color3,
+			color4            = color4,
+			paintType		  = {paintType1, paintType2},
+			ColorType 		  = {whoCaresColor1, whoCaresColor2},	
 			pearlescentColor  = pearlescentColor,
 			wheelColor        = wheelColor,
-
+			dshcolor 		  = dshcolor,
+			intcolor 		  = intcolor,
+			drift			  = drift,
+			
 			wheels            = GetVehicleWheelType(vehicle),
 			windowTint        = GetVehicleWindowTint(vehicle),
 			xenonColor        = GetVehicleXenonLightsColor(vehicle),
@@ -637,6 +657,8 @@ function ESX.Game.GetVehicleProperties(vehicle)
 			modTurbo          = IsToggleModOn(vehicle, 18),
 			modSmokeEnabled   = IsToggleModOn(vehicle, 20),
 			modXenon          = IsToggleModOn(vehicle, 22),
+			modWheelVariat	  = GetVehicleModVariation(vehicle,23),
+			modTyresBurst     = GetVehicleTyresCanBurst(vehicle),
 
 			modFrontWheels    = GetVehicleMod(vehicle, 23),
 			modBackWheels     = GetVehicleMod(vehicle, 24),
@@ -663,14 +685,15 @@ function ESX.Game.GetVehicleProperties(vehicle)
 			modTrimB          = GetVehicleMod(vehicle, 44),
 			modTank           = GetVehicleMod(vehicle, 45),
 			modWindows        = GetVehicleMod(vehicle, 46),
-			modLivery         = GetVehicleLivery(vehicle)
+			modLivery         = GetVehicleLivery(vehicle),
+			modLivery2         = GetVehicleMod(vehicle, 48),
 		}
 	else
 		return
 	end
 end
 
-function ESX.Game.SetVehicleProperties(vehicle, props)
+ESX.Game.SetVehicleProperties = function(vehicle, props)
 	if DoesEntityExist(vehicle) then
 		local colorPrimary, colorSecondary = GetVehicleColours(vehicle)
 		local pearlescentColor, wheelColor = GetVehicleExtraColours(vehicle)
@@ -680,11 +703,38 @@ function ESX.Game.SetVehicleProperties(vehicle, props)
 		if props.plateIndex then SetVehicleNumberPlateTextIndex(vehicle, props.plateIndex) end
 		if props.bodyHealth then SetVehicleBodyHealth(vehicle, props.bodyHealth + 0.0) end
 		if props.engineHealth then SetVehicleEngineHealth(vehicle, props.engineHealth + 0.0) end
-		if props.tankHealth then SetVehiclePetrolTankHealth(vehicle, props.tankHealth + 0.0) end
 		if props.fuelLevel then SetVehicleFuelLevel(vehicle, props.fuelLevel + 0.0) end
 		if props.dirtLevel then SetVehicleDirtLevel(vehicle, props.dirtLevel + 0.0) end
 		if props.color1 then SetVehicleColours(vehicle, props.color1, colorSecondary) end
 		if props.color2 then SetVehicleColours(vehicle, props.color1 or colorPrimary, props.color2) end
+		if props.color3 ~= nil then 
+			ClearVehicleCustomPrimaryColour(vehicle)
+			SetVehicleCustomPrimaryColour(vehicle, props.color3[1], props.color3[2], props.color3[3])
+		end
+		if props.color4 ~= nil then
+			ClearVehicleCustomSecondaryColour(vehicle)
+			SetVehicleCustomSecondaryColour(vehicle, props.color4[1], props.color4[2], props.color4[3])
+		end
+		if props.paintType ~= nil then
+			local coraplicarp = 0
+			local coraplicars = 0
+			if props.ColorType then
+				coraplicarp = props.ColorType[1]
+				coraplicars = props.ColorType[2]
+			end
+			SetVehicleModColor_1(vehicle, props.paintType[1], coraplicarp, 0)
+			SetVehicleModColor_2(vehicle, props.paintType[2], coraplicars)
+		end
+		if props.dshcolor ~= nil then
+			SetVehicleDashboardColour(vehicle, props.dshcolor)
+		end
+		if props.intcolor ~= nil then
+			SetVehicleInteriorColour(vehicle, props.intcolor)
+		end
+		if props.drift ~= nil then
+			SetDriftTyresEnabled(vehicle,props.drift)
+		end
+		----- APARTIR DAQUI N MEXI EM MAIS NADA
 		if props.pearlescentColor then SetVehicleExtraColours(vehicle, props.pearlescentColor, wheelColor) end
 		if props.wheelColor then SetVehicleExtraColours(vehicle, props.pearlescentColor or pearlescentColor, props.wheelColor) end
 		if props.wheels then SetVehicleWheelType(vehicle, props.wheels) end
@@ -730,7 +780,16 @@ function ESX.Game.SetVehicleProperties(vehicle, props)
 		if props.modArmor then SetVehicleMod(vehicle, 16, props.modArmor, false) end
 		if props.modTurbo then ToggleVehicleMod(vehicle,  18, props.modTurbo) end
 		if props.modXenon then ToggleVehicleMod(vehicle,  22, props.modXenon) end
-		if props.modFrontWheels then SetVehicleMod(vehicle, 23, props.modFrontWheels, false) end
+		if props.modTyresBurst ~= nil then
+			SetVehicleTyresCanBurst(vehicle,props.modTyresBurst)
+		end
+		if props.modFrontWheels ~= nil then
+			local aplicar = false
+			if props.modWheelVariat then
+				aplicar = props.modWheelVariat
+			end
+			SetVehicleMod(vehicle, 23, props.modFrontWheels, aplicar)
+		end
 		if props.modBackWheels then SetVehicleMod(vehicle, 24, props.modBackWheels, false) end
 		if props.modPlateHolder then SetVehicleMod(vehicle, 25, props.modPlateHolder, false) end
 		if props.modVanityPlate then SetVehicleMod(vehicle, 26, props.modVanityPlate, false) end
@@ -756,8 +815,10 @@ function ESX.Game.SetVehicleProperties(vehicle, props)
 		if props.modWindows then SetVehicleMod(vehicle, 46, props.modWindows, false) end
 
 		if props.modLivery then
-			SetVehicleMod(vehicle, 48, props.modLivery, false)
 			SetVehicleLivery(vehicle, props.modLivery)
+		end
+		if props.modLivery2 then
+			SetVehicleMod(vehicle, 48, props.modLivery2, false)
 		end
 	end
 end
