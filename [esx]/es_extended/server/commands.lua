@@ -31,7 +31,8 @@ ESX.RegisterCommand('car', 'staff3', function(xPlayer, args, showError)
 			SetPedIntoVehicle(playerPed, car, -1)
 		until GetVehiclePedIsIn(playerPed, false) ~= 0 or timeout < 1
 		Citizen.Wait(100)
-		TriggerClientEvent('cd_garage:AddKeys', xPlayer.source, tostring(GetVehicleNumberPlateText(car)))
+		local netID = NetworkGetNetworkIdFromEntity(car)
+		xPlayer.triggerEvent('cd_garage:AddKeys2', NetworkGetNetworkIdFromEntity(car))
 	end)
 
 end, false, {help = _U('command_car'), validate = false, arguments = {
