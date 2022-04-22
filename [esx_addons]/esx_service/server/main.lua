@@ -45,6 +45,7 @@ RegisterServerEvent('esx_service:disableService')
 AddEventHandler('esx_service:disableService', function(name)
 	name = ((type(serviceAllowedJobs[name]) == "string") and serviceAllowedJobs[name] or name)
 	InService[name][source] = nil
+	TriggerClientEvent('cd_dispatch:OnDutyChecks', source, false)
 	endTimer(source, name)
 end)
 
@@ -145,6 +146,7 @@ ESX.RegisterServerCallback('esx_service:enableService', function(source, cb, nam
 		end
 	end
 	InService[name][source] = true
+	TriggerClientEvent('cd_dispatch:OnDutyChecks', source, true)
 	cb(true, MaxInService[name], inServiceCount)
 	--print("El usuario " .. GetPlayerName(source) .. "^0 [ID: " .. source .. "] ^2ENTRÓ DE SERVICIO EN " .. string.upper(name) .. ".")
 	Citizen.CreateThread(function()
