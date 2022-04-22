@@ -40,13 +40,8 @@ if not Config.UseDeferrals then
 	AddEventHandler('esx_identity:showRegisterIdentity', function()
 		TriggerEvent('esx_skin:resetFirstSpawn')
 
-		print("esx_identity:showRegisterIdentity")
-
 		if not ESX.GetPlayerData().dead then
-			print("^1not ESX.GetPlayerData().dead")
 			EnableGui(true)
-		else
-			print("^2ESX.GetPlayerData().dead")
 		end
 	end)
 
