@@ -399,8 +399,8 @@ ESX.TriggerRadiusEvent = function(eventName, loc, dist, ...)
 			loc = GetEntityCoords(GetPlayerPed(loc))
 		end
 		if type(loc) == "vector3" then
-			for _, xPlayer in ipairs(ESX.Players) do
-				local coords = xPlayer.getCoords(true)
+			for _, xPlayer in pairs(ESX.Players) do
+				local coords = GetEntityCoords(GetPlayerPed(xPlayer.source))
 				if coords ~= nil and #(coords-loc) <= ((dist ~= nil and tonumber(dist) and dist > 0) and dist+0.0 or 100.0) then
 					xPlayer.triggerEvent(eventName, ...)
 				end
@@ -413,3 +413,90 @@ AddEventHandler("esx:triggerRadiusEvent", function(eventName, loc, dist, ...)
 	ESX.TriggerRadiusEvent(eventName, loc, dist, ...)
 end)
 
+ESX.CreateJob = function(job, job_grades, forceReplaceExisting)
+	if job ~= nil and job_grades ~= nil and type(job) == "table" and type(job_grades) == "table" and (not ESX.Jobs[job] or forceReplaceExisting) then
+		ESX.Jobs[job.name] = {
+			name = job.name,
+			label = job.label,
+			whitelisted = job.whitelisted,
+			grades = job_grades,
+		}
+		if ESX.Table.SizeOf(ESX.Jobs[job.name].grades) == 0 then
+			ESX.Jobs[job.name] = nil
+			print(('[ExtendedMode] [^3WARNING^7] Ignoring job "%s" due to no job grades found'):format(v2.name))
+		end
+	end
+end
+
+-- ESXv1/ExM configurable cooldown function with multicharacter support
+ESX.Cooldowns = {
+	['global'] = {},
+}
+
+ESX.SetCooldown = function(source, action, duration, isGlobal, allCharacters, clientServer)
+	local source, duration, start = tonumber(source), tonumber(duration), os.time()
+	local identifier
+	if allCharacters then
+		identifier = ESX.GetPlayerFromId(source).steam
+	else
+		identifier = ESX.GetPlayerFromId(source).identifier
+	end
+	local scope
+	if isGlobal then
+		scope = "global"
+	else
+		scope = GetInvokingResource() or GetCurrentResourceName() or "unknown" 
+		if ESX.Cooldowns[scope] == nil then ESX.Cooldowns[scope] = {} end
+	end
+	if ESX.Cooldowns[scope][identifier] == nil then ESX.Cooldowns[scope][identifier] = {} end
+	if ESX.Cooldowns[scope][identifier][action] ~= nil and ESX.Cooldowns[scope][identifier][action].finish > start then
+		print("ESX.SetCooldown: overriding existing cooldown (this should not happen)... InvokingRes: " .. scope .. " Action: " .. action .. ": " .. json.encode(ESX.Cooldowns[scope][identifier][action]))
+	else
+		ESX.Cooldowns[scope][identifier][action] = {}
+	end
+	ESX.Cooldowns[scope][identifier][action] = {
+		duration = duration,
+		start = start,
+		finish = (start+duration),
+		clientServer = clientServer,
+	}
+	if clientServer then
+		xPlayer.triggerEvent("esx:setcooldown", { data = { [action] = ESX.Cooldowns[scope][identifier][action] } } )
+	end
+	return true
+end
+
+ESX.IsInCooldown =  function(source, action, isGlobal, allCharacters)
+	local source, currTime = tonumber(source), os.time()
+	local identifier
+	if allCharacters then
+		identifier = ESX.GetPlayerFromId(source).steam
+	else
+		identifier = ESX.GetPlayerFromId(source).identifier
+	end
+	local scope
+	if isGlobal then
+		scope = "global"
+	else
+		scope = GetInvokingResource() or GetCurrentResourceName() or "unknown" 
+		if ESX.Cooldowns[scope] == nil then return false end
+	end
+	if ESX.Cooldowns[scope][identifier] == nil then return false end
+	if ESX.Cooldowns[scope][identifier][action] ~= nil then
+		if ESX.Cooldowns[scope][identifier][action].finish < currTime then
+			return false
+		else
+			return true
+		end
+	else
+		return false
+	end
+end
+
+ESX.RegisterServerCallback("esx:SetCooldown", function(...)
+	cb(ESX.SetCooldown(...))
+end)
+
+ESX.RegisterServerCallback("esx:IsInCooldown", function(...)
+	cb(ESX.IsInCooldown(...))
+end)

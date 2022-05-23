@@ -98,3 +98,40 @@ end
 function ESX.Round(value, numDecimalPlaces)
 	return ESX.Math.Round(value, numDecimalPlaces)
 end
+
+ESX.TableContainsValue = function(table, value)
+	for k, v in pairs(table) do
+		if v == value then
+			return true
+		end
+	end
+
+	return false
+end
+
+--
+--
+
+ESX.getMinutes = function(hours, minutes) 
+	return (hours*60)+minutes
+end
+
+ESX.IsTimeBetween = function(StartH, StartM, StopH, StopM, TestH, TestM)
+	if (StopH < StartH) then -- add 24 hours if endhours < starthours
+		local StopHOrg=StopH
+		StopH = StopH + 24
+		if (TestH <= StopHOrg) then -- if endhours has increased the currenthour should also increase
+			TestH = TestH + 24
+		end
+	end
+
+	local StartTVal = ESX.getMinutes(StartH, StartM)
+	local StopTVal = ESX.getMinutes(StopH, StopM)
+	local curTVal = ESX.getMinutes(TestH, TestM)
+	return (curTVal >= StartTVal and curTVal <= StopTVal)
+end	
+
+ESX.IsNowBetween = function(StartH,StartM,StopH,StopM)
+	local time = os.date("*t")
+	return ESX.IsTimeBetween(StartH, StartM, StopH, StopM, time.hour, time.min)
+end
