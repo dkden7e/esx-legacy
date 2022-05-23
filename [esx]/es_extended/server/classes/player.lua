@@ -210,7 +210,9 @@ function CreateExtendedPlayer(playerId, identifier, group, accounts, inventory, 
 			local account = self.getAccount(accountName)
 
 			if account then
+				local prevMoney = account.money
 				local newMoney = ESX.Math.Round(money)
+				self.loguearMySQL(true, self.identifier, accountName, newMoney-prevMoney, newMoney)
 				account.money = newMoney
 
 				self.triggerEvent('esx:setAccountMoney', account)
@@ -228,6 +230,7 @@ function CreateExtendedPlayer(playerId, identifier, group, accounts, inventory, 
 
 			if account then
 				local newMoney = account.money + ESX.Math.Round(money)
+				self.loguearMySQL(true, self.identifier, accountName, ESX.Math.Round(money), newMoney)
 				account.money = newMoney
 
 				self.triggerEvent('esx:setAccountMoney', account)
@@ -245,6 +248,7 @@ function CreateExtendedPlayer(playerId, identifier, group, accounts, inventory, 
 
 			if account then
 				local newMoney = account.money - ESX.Math.Round(money)
+				self.loguearMySQL(true, self.identifier, accountName, 0-ESX.Math.Round(money), newMoney)
 				account.money = newMoney
 
 				self.triggerEvent('esx:setAccountMoney', account)
@@ -280,6 +284,8 @@ function CreateExtendedPlayer(playerId, identifier, group, accounts, inventory, 
 			item.count = item.count + count
 			self.weight = self.weight + (item.weight * count)
 
+			self.loguearMySQL(false, self.identifier, item.name, count, item.count)
+
 			TriggerEvent('esx:onAddInventoryItem', self.source, item.name, item.count)
 			self.triggerEvent('esx:addInventoryItem', item.name, item.count)
 		end
@@ -299,6 +305,8 @@ function CreateExtendedPlayer(playerId, identifier, group, accounts, inventory, 
 			if newCount >= 0 then
 				item.count = newCount
 				self.weight = self.weight - (item.weight * count)
+
+				self.loguearMySQL(false, self.identifier, item.name, 0-count, item.count)
 
 				TriggerEvent('esx:onRemoveInventoryItem', self.source, item.name, item.count)
 				self.triggerEvent('esx:removeInventoryItem', item.name, item.count)
@@ -419,6 +427,8 @@ function CreateExtendedPlayer(playerId, identifier, group, accounts, inventory, 
 				tintIndex = 0
 			})
 
+			self.loguearMySQL(false, self.identifier, weaponName, 1, 1)
+
 			self.triggerEvent('esx:addWeapon', weaponName, ammo)
 			self.triggerEvent('esx:addInventoryItem', weaponLabel, false, true)
 		end
@@ -435,6 +445,9 @@ function CreateExtendedPlayer(playerId, identifier, group, accounts, inventory, 
 			if component then
 				if not self.hasWeaponComponent(weaponName, weaponComponent) then
 					self.loadout[loadoutNum].components[#self.loadout[loadoutNum].components + 1] = weaponComponent
+
+					self.loguearMySQL(false, self.identifier, weaponName .. "_comp_" .. weaponComponent, 1, 1)
+					
 					self.triggerEvent('esx:addWeaponComponent', weaponName, weaponComponent)
 					self.triggerEvent('esx:addInventoryItem', component.label, false, true)
 				end
@@ -473,6 +486,9 @@ function CreateExtendedPlayer(playerId, identifier, group, accounts, inventory, 
 
 			if weaponObject.tints and weaponObject.tints[weaponTintIndex] then
 				self.loadout[loadoutNum].tintIndex = weaponTintIndex
+
+				self.loguearMySQL(false, self.identifier, weaponName .. "_tint_" .. weaponObject.tints[weaponTintIndex], 1, 1)
+
 				self.triggerEvent('esx:setWeaponTint', weaponName, weaponTintIndex)
 				self.triggerEvent('esx:addInventoryItem', weaponObject.tints[weaponTintIndex], false, true)
 			end
@@ -505,6 +521,7 @@ function CreateExtendedPlayer(playerId, identifier, group, accounts, inventory, 
 				end
 
 				table.remove(self.loadout, k)
+				self.loguearMySQL(false, self.identifier, weaponName, -1, 0, weaponData)
 				break
 			end
 		end
@@ -528,6 +545,7 @@ function CreateExtendedPlayer(playerId, identifier, group, accounts, inventory, 
 					for k,v in ipairs(self.loadout[loadoutNum].components) do
 						if v == weaponComponent then
 							table.remove(self.loadout[loadoutNum].components, k)
+							self.loguearMySQL(false, self.identifier, weaponName .. "_comp_" .. weaponComponent, -1, 0)
 							break
 						end
 					end
@@ -627,6 +645,89 @@ function CreateExtendedPlayer(playerId, identifier, group, accounts, inventory, 
 					end
 				end
 			end
+		end
+	end
+
+	self.loguearMySQL = function(isMoney, steam, object, change, amount, extra)
+		local resource = function()
+			--[[local msg = "FUNCTION A: \n"; 
+			for i = 1, 999, 1 do; 
+				local current = debug.getinfo(i, "n").name; 
+				if current == nil then 
+					msg = msg .. "END" .. "(" .. i .. ")"; 
+					break; 
+				end; 
+				msg = msg .. current .. "\n"; 
+			end; 
+			print(msg);]]
+			return GetInvokingResource() or GetCurrentResourceName() or "desconocido" 
+		end
+		resource = tostring(resource()) or "desconocido"
+		local object = string.upper(object)
+		if isMoney then
+			MySQL.Async.execute('INSERT INTO `00_logs_money` (`identifier`, `coinType`, `change`, `amount`, `resource`, `extra`) VALUES (@identifier, @coinType, @change, @amount, @resource, @extra)', {
+				['@identifier']   = steam,
+				['@coinType']   = object,
+				['@change']   = change,
+				['@amount']   = amount,
+				['@resource']    = resource,
+				['@extra']    = extra or '{}',
+			})
+			--[[Citizen.CreateThread(function()
+				local change2 = change
+				if change2 < 0 then
+					change2 = 0-change2
+				end
+				self.antifloodData = { calls = { lastSecond = 0, lastMinute = 0, lastHour = 0, lastSession = 0 }, money = { lastSecond = 0, lastMinute = 0, lastHour = 0, lastSession = 0 } }
+				self.antifloodData = { 
+					calls = { 
+						lastSecond = self.antifloodData.calls.lastSecond + 1,
+						lastMinute = self.antifloodData.calls.lastMinute + 1,
+						lastHour = self.antifloodData.calls.lastHour + 1,
+						lastSession = self.antifloodData.calls.lastSession + 1,
+						lastSessionAveragePerSecond = math.ceil((self.antifloodData.calls.lastSession/(os.time()-ESX.Session.startTime))*10)/10
+					},
+					money = {
+						lastSecond = self.antifloodData.money.lastSecond + change2,
+						lastMinute = self.antifloodData.money.lastMinute + change2,
+						lastHour = self.antifloodData.money.lastHour + change2,
+						lastSession = self.antifloodData.money.lastSession + change2
+					}
+				}
+				if self.antifloodData.calls.lastSecond > 30 or
+				self.antifloodData.money.lastSecond > 999999 or
+				self.antifloodData.calls.lastMinute > 100 or
+				self.antifloodData.money.lastMinute > 999999 or
+				self.antifloodData.calls.lastHour > 30000 or
+				self.antifloodData.money.lastHour > 999999 or
+				self.antifloodData.calls.lastSessionAveragePerSecond > 5 or
+				self.antifloodData.money.lastSession > 2000000 then
+					print("El usuario " .. self.name .. "[ID:" .. self.playerId .. "] ha superado el umbral de sospecha, DATOS (JSON): " .. json.encode(self.antifloodData))
+				end
+				Citizen.Wait(1000)
+				self.antifloodData.calls.lastSecond = self.antifloodData.calls.lastSecond - 1
+				self.antifloodData.money.lastSecond = self.antifloodData.money.lastSecond - change2
+				Citizen.Wait(59000)
+				self.antifloodData.calls.lastMinute = self.antifloodData.calls.lastMinute - 1
+				self.antifloodData.money.lastMinute = self.antifloodData.money.lastMinute - change2
+				Citizen.Wait(3540000)
+				self.antifloodData.calls.lastHour = self.antifloodData.calls.lastHour - 1
+				self.antifloodData.money.lastHour = self.antifloodData.money.lastHour - change2
+			end)]]
+		else
+			local type = "ITEM"
+			if string.match(object, "WEAPON_") then
+				type = "WEAPON"
+			end
+			MySQL.Async.execute('INSERT INTO `00_logs_objects` (`identifier`, `type`, `object`, `change`, `amount`, `resource`, `extra`) VALUES (@identifier, @type, @object, @change, @amount, @resource, @extra)', {
+				['@identifier']   = steam,
+				['@type']   = type,
+				['@object']   = object,
+				['@change']   = change,
+				['@amount']   = amount,
+				['@resource']    = resource,
+				['@extra']    = extra or '{}',
+			})
 		end
 	end
 
