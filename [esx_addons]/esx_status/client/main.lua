@@ -50,6 +50,11 @@ AddEventHandler('esx:onPlayerLogout', function()
 	end
 end)
 
+local staffMode = false
+AddEventHandler("esx_status:innmunity", function(toggle)
+	staffMode = toggle
+end)
+
 RegisterNetEvent('esx_status:load')
 AddEventHandler('esx_status:load', function(status)
 	ESX.PlayerLoaded = true
@@ -68,7 +73,9 @@ AddEventHandler('esx_status:load', function(status)
 		local data = {}
 		while ESX.PlayerLoaded do
 			for i=1, #Status do
-				Status[i].onTick()
+				if not staffMode then
+					Status[i].onTick()
+				end
 				table.insert(data, {
 					name = Status[i].name,
 					val = Status[i].val,
