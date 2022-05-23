@@ -309,7 +309,7 @@ AddEventHandler('chatMessage', function(playerId, author, message)
 		CancelEvent()
 		local commandName = message:sub(1):gmatch("%w+")()
 		if xPlayer then
-			xPlayer.showNotification(_U('commanderror_invalidcommand', commandName))
+			xPlayer.triggerEvent("chat:addMesage", { args = { "^1SISTEMA:^0", _U('commanderror_invalidcommand', commandName) }})
 		else
 			print(_U('commanderror_invalidcommand', commandName))
 		end
