@@ -287,6 +287,7 @@ ESX.RegisterServerCallback('esx_society:setJobSalary', function(source, cb, job,
 			MySQL.update('UPDATE job_grades SET salary = ? WHERE job_name = ? AND grade = ?', {salary, job, grade},
 			function(rowsChanged)
 				Jobs[job].grades[tostring(grade)].salary = salary
+				ESX.setJobSalary(job, tostring(grade), salary)
 
 				local xPlayers = ESX.GetExtendedPlayers('job', job)
 				for _, xTarget in pairs(xPlayers) do

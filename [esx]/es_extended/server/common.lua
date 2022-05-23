@@ -107,6 +107,12 @@ MySQL.ready(function()
 	StartPayCheck()
 end)
 
+ESX.setJobSalary = function(job, grade, salary)
+	if ESX.Jobs[job] and ESX.Jobs[job].grades and ESX.Jobs[job].grades[grade] then
+		ESX.Jobs[job].grades[grade].salary = salary
+	end
+end
+
 RegisterServerEvent('esx:clientLog')
 AddEventHandler('esx:clientLog', function(msg)
 	if Config.EnableDebug then
