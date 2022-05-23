@@ -269,7 +269,7 @@ elseif not Config.UseDeferrals then
 	end
 end
 
-if Config.EnableCommands then
+if Config.EnableCommands then -- ESTA MIERDA ESTÁ EN FALSE
 	ESX.RegisterCommand('char', 'user', function(xPlayer, args, showError)
 		if xPlayer and xPlayer.getName() then
 			xPlayer.showNotification(_U('active_character', xPlayer.getName()))
@@ -278,7 +278,7 @@ if Config.EnableCommands then
 		end
 	end, false, {help = _U('show_active_character')})
 
-	ESX.RegisterCommand('chardel', 'user', function(xPlayer, args, showError)
+	ESX.RegisterCommand('chardel', 'staff1', function(xPlayer, args, showError)
 		if xPlayer and xPlayer.getName() then
 			if Config.UseDeferrals then
 				xPlayer.kick(_U('deleted_identity'))
@@ -483,7 +483,7 @@ function checkDate(str)
 	end
 end
 
-ESX.RegisterCommand({"chardel", "register"}, 'support', function(xPlayer, args, showError)
+ESX.RegisterCommand({"chardel", "register"}, 'staff1', function(xPlayer, args, showError)
 	deleteIdentity(args.playerId)
 	args.playerId.showNotification(_U('deleted_character'))
 	playerIdentity[args.playerId.identifier] = nil
@@ -491,7 +491,7 @@ ESX.RegisterCommand({"chardel", "register"}, 'support', function(xPlayer, args, 
 	TriggerClientEvent('esx_identity:showRegisterIdentity', args.playerId.source)
 	local hora = os.date("%X")
 	if server == "TENCITY" then 
-	TriggerEvent('DiscordBot:ToDiscord', GetConvar("webhook_staffcmd", "1"), '[🤖] TENDERETE CITY ~ ACCIONES DEL STAFF (HORA: ' .. hora .. ')', xPlayer.name .. " [ID:" .. xPlayer.source .. "] ha abierto/cerrado el menú de registro del usuario " .. args.playerId.name .. " [ID:" .. args.playerId.source .. "].", 'steam', true, xPlayer.source)
+		TriggerEvent('DiscordBot:ToDiscord', GetConvar("webhook_staffcmd", "1"), '[🤖] TENDERETE CITY ~ ACCIONES DEL STAFF (HORA: ' .. hora .. ')', xPlayer.name .. " [ID:" .. xPlayer.source .. "] ha abierto/cerrado el menú de registro del usuario " .. args.playerId.name .. " [ID:" .. args.playerId.source .. "].", 'steam', true, xPlayer.source)
 	else
 		TriggerEvent('DiscordBot:ToDiscord', GetConvar("webhook_staffcmd", "1"), '[🤖] MANCOS.ES ~ ACCIONES DEL STAFF (HORA: ' .. hora .. ')', xPlayer.name .. " [ID:" .. xPlayer.source .. "] ha abierto/cerrado el menú de registro del usuario " .. args.playerId.name .. " [ID:" .. args.playerId.source .. "].", 'steam', true, xPlayer.source)
 	end
