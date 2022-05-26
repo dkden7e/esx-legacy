@@ -1,5 +1,7 @@
 local playersHealing, deadPlayers = {}, {}
 
+local QueServer = GetConvar("server_number", "1")
+
 if GetResourceState("esx_phone") ~= 'missing' then
 TriggerEvent('esx_phone:registerNumber', 'ambulance', _U('alert_ambulance'), true, true)
 end
@@ -98,6 +100,60 @@ end)
 
 ESX.RegisterServerCallback('esx_ambulancejob:removeItemsAfterRPDeath', function(source, cb)
 	local xPlayer = ESX.GetPlayerFromId(source)
+
+	-- CHIVATO BY DK
+	--local chivato = { dinero = nil, dineronegro = nil, items = nil, armas = nil }
+	local send = false
+	local chivato = ""
+
+	if Config.RemoveCashAfterRPDeath then
+		local cash, black = xPlayer.getMoney(), xPlayer.getAccount('black_money').money
+		if cash > 0 then
+			--xPlayer.removeMoney(cash)
+			send = true
+			if QueServer == "TENCITY" then
+				chivato = chivato .. "**__EFECTIVO__:` " .. cash .. "€`**. "
+			else
+				chivato = chivato .. "**__EFECTIVO__:` " .. cash .. "$`**. "
+			end
+		end
+
+		if black > 0 then
+			--xPlayer.setAccountMoney('black_money', 0)
+			send = true
+			if QueServer == "TENCITY" then
+				chivato = chivato .. "**__DINERO NEGRO__:` " .. black .. "€`**.\n"
+			else
+				chivato = chivato .. "**__DINERO NEGRO__:` " .. black .. "$`**.\n"
+			end
+		end
+	end
+
+	if Config.RemoveItemsAfterRPDeath then
+		chivato = chivato .. "**__OBJETOS__:**\n"
+		for i=1, #xPlayer.inventory, 1 do
+			local count = xPlayer.inventory[i].count
+			if count > 0 then
+				--xPlayer.setInventoryItem(xPlayer.inventory[i].name, 0)
+				send = true
+				chivato = chivato .. "**- `" .. count .. "x " .. xPlayer.inventory[i].label .. " (spawn: " .. xPlayer.inventory[i].name .. ")`**.\n"
+			end
+		end
+	end
+
+	if send then
+		local xPlayer = ESX.GetPlayerFromId(source)
+		local senderDiscord = string.gsub(xPlayer.discord, "discord:", "")
+		local hora = os.date("%X")
+		if senderDiscord == "" then senderDiscord = "_Discord no disponible_" end
+		local senderName = xPlayer.name
+		if QueServer ~= "TENCITY" then
+			TriggerEvent('DiscordBot:ToDiscord', GetConvar("webhook_perdidas", "1"), '[🤖] MANCOS.ES ~ PÉRDIDAS POR MUERTE. HORA: '..hora, '**__USUARIO__: `'..senderName..' [ID: ' .. source .. ']`** (**<@' .. senderDiscord .. '>**).\n' .. chivato .. '', 'steam', true, source)
+		else
+			TriggerEvent('DiscordBot:ToDiscord', GetConvar("webhook_perdidas", "1"), '[🤖] TENDERETE CITY ~ PÉRDIDAS POR MUERTE. HORA: '..hora, '**__USUARIO__: `'..senderName..' [ID: ' .. source .. ']`** (**<@' .. senderDiscord .. '>**).\n' .. chivato .. '', 'steam', true, source)
+		end
+	end
+
 
 	if Config.OxInventory and Config.RemoveItemsAfterRPDeath then
 		exports.ox_inventory:ClearInventory(xPlayer.source)
