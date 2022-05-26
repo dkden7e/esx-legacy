@@ -7,18 +7,26 @@ local timers = {}
 TriggerEvent('esx:getSharedObject', function(obj) ESX = obj end)
 
 local serviceAllowedJobs = {
-	['reporter'] = true,
-	['police'] = "police",
-	['police2'] = "police",
-	['sheriff'] = "police",
-	['fib'] = "police",
-	['mechanic'] = "mechanic",
-	['bennys'] = "mechanic",
-	['driftkingz'] = "mechanic",
-	['chatarra'] = "mechanic",
-	['sanders'] = "mechanic",
-	['taxi'] = true,
-	['ambulance'] = true,
+    ['reporter'] = "reporter",
+    ['police'] = "police",
+    ['police2'] = "police",
+    ['sheriff'] = "police",
+    ['sheriff2'] = "police",
+    ['justice'] = "police",
+    ['fib'] = "police",
+    ['mechanic'] = "mechanic",
+    ['bennys'] = "mechanic",
+    ['driftkingz'] = "mechanic",
+    ['chatarra'] = "mechanic",
+    ['sanders'] = "mechanic",
+    ['mechanic1'] = "mechanic",
+    ['mechanic2'] = "mechanic",
+    ['chatarra'] = "mechanic",
+    ['chatarrero'] = "mechanic",
+    ['sabanda'] = "mechanic",
+    ['mecagm'] = "mechanic",
+    ['taxi'] = "taxi",
+    ['ambulance'] = "ambulance",
 }
 
 function GetInServiceCount(name)
@@ -35,23 +43,35 @@ function GetInServiceCount(name)
 	return count
 end
 
+local copJob = {}
+AddEventHandler("esx:setJob", function(source, job, prevJob)
+	if (job ~= prevJob) and copJob[source] then
+		TriggerEvent('cd_dispatch:DispatcherToggle', false, copJob[source])
+		copJob[source] = nil
+	end
+end)
+
 AddEventHandler('esx_service:activateService', function(name, max)
-	name = ((type(serviceAllowedJobs[name]) == "string") and serviceAllowedJobs[name] or name)
+	name = serviceAllowedJobs[name] and serviceAllowedJobs[name] or name
 	InService[name]    = {}
 	MaxInService[name] = max
 end)
 
 RegisterServerEvent('esx_service:disableService')
-AddEventHandler('esx_service:disableService', function(name)
-	name = ((type(serviceAllowedJobs[name]) == "string") and serviceAllowedJobs[name] or name)
+AddEventHandler('esx_service:disableService', function(_name)
+	name = serviceAllowedJobs[_name] and serviceAllowedJobs[_name] or _name
 	InService[name][source] = nil
 	TriggerClientEvent('cd_dispatch:OnDutyChecks', source, false)
+	if copJob[source] then
+		TriggerEvent('cd_dispatch:DispatcherToggle', false, copJob[source])
+		copJob[source] = nil
+	end
 	endTimer(source, name)
 end)
 
 RegisterServerEvent('esx_service:notifyAllInService')
 AddEventHandler('esx_service:notifyAllInService', function(notification, name)
-	name = ((type(serviceAllowedJobs[name]) == "string") and serviceAllowedJobs[name] or name)
+	name = serviceAllowedJobs[name] and serviceAllowedJobs[name] or name
 	for k,v in pairs(InService[name]) do
 		if v == true then
 			TriggerClientEvent('esx_service:notifyAllInService', k, notification, source)
@@ -115,9 +135,9 @@ function endTimer(source, name)
 	end
 end
 
-ESX.RegisterServerCallback('esx_service:enableService', function(source, cb, name)
+ESX.RegisterServerCallback('esx_service:enableService', function(source, cb, _name)
 
-	name = ((type(serviceAllowedJobs[name]) == "string") and serviceAllowedJobs[name] or name)
+	name = serviceAllowedJobs[_name] and serviceAllowedJobs[_name] or _name
 
 	if InService[name] == nil then
 		if serviceAllowedJobs[name] then
@@ -147,6 +167,12 @@ ESX.RegisterServerCallback('esx_service:enableService', function(source, cb, nam
 	end
 	InService[name][source] = true
 	TriggerClientEvent('cd_dispatch:OnDutyChecks', source, true)
+	if name == "police" then
+		copJob[source] = _name
+	elseif copJob[source] then
+		TriggerEvent('cd_dispatch:DispatcherToggle', false, copJob[source])
+		copJob[source] = nil
+	end
 	cb(true, MaxInService[name], inServiceCount)
 	--print("El usuario " .. GetPlayerName(source) .. "^0 [ID: " .. source .. "] ^2ENTRÓ DE SERVICIO EN " .. string.upper(name) .. ".")
 	Citizen.CreateThread(function()
@@ -172,15 +198,15 @@ ESX.RegisterServerCallback('esx_service:enableService', function(source, cb, nam
 					break
 				end
 			end
-			if name == "police" or name == "sheriff" then
+			if serviceAllowedJobs[name] and (serviceAllowedJobs[name] == "police") or (name == "police") then
 				faccion = "SAPD (LSPD/LSSD)"
 				TriggerEvent('DiscordBot:ToDiscord', GetConvar("webhook_sapdservicios", "1"), "SERVICIO COMENZADO", "✅ **__USUARIO__: `" .. GetPlayerName(source) .. " [ID:" .. source .. "]`** (<@" .. discordId .. ">).", 'steam', true, source)
-			elseif name == "ambulance" then
+			elseif serviceAllowedJobs[name] and (serviceAllowedJobs[name] == "ambulance") or (name == "ambulance") then
 				faccion = "SAFD"
 				TriggerEvent('DiscordBot:ToDiscord', GetConvar("webhook_safdservicios", "1"), "SERVICIO COMENZADO", "✅ **__USUARIO__: `" .. GetPlayerName(source) .. " [ID:" .. source .. "]`** (<@" .. discordId .. ">).", 'steam', true, source)
-			elseif name == "mechanic" or name == "bennys" or name == "driftkingz" or name == "sanders" or name == "chatarra" then
-				faccion = "trabajador del taller"
-			elseif name == "taxi" then
+			elseif serviceAllowedJobs[name] and (serviceAllowedJobs[name] == "mechanic") or (name == "mechanic") then
+				faccion = "trabajador/a de taller"
+			elseif serviceAllowedJobs[name] and (serviceAllowedJobs[name] == "taxi") or (name == "taxi") then
 				faccion = "taxista"
 			end
 			TriggerEvent('DiscordBot:ToDiscord', webhook, "SERVICIO COMENZADO", "✅ **__USUARIO__: `" .. GetPlayerName(source) .. " [ID:" .. source .. "]`** (<@" .. discordId .. ">). **__FACCIÓN:__ `" .. faccion .. "`**.", 'steam', true, source)
@@ -193,7 +219,7 @@ end)
 ESX.RegisterServerCallback('esx_service:isInService', function(source, cb, name)
 	local isInService = false
 	--print("191")
-	name = ((type(serviceAllowedJobs[name]) == "string") and serviceAllowedJobs[name] or name)
+	name = serviceAllowedJobs[name] and serviceAllowedJobs[name] or name
 	--print("193")
 	if InService[name] == nil then
 		--print("195")
@@ -238,36 +264,39 @@ AddEventHandler('esx_service:isInService', function(cb, payload)
 end)
 
 ESX.RegisterServerCallback('esx_service:getInServiceList', function(source, cb, name)
-	cb(InService[name])
+	cb(InService[serviceAllowedJobs[name] and serviceAllowedJobs[name] or name])
 end)
 
 RegisterServerEvent('esx_service:getInServiceList')
 AddEventHandler('esx_service:getInServiceList', function(callback, name)
-    callback(InService[name])
+    callback(InService[serviceAllowedJobs[name] and serviceAllowedJobs[name] or name])
 end)
 
+
 AddEventHandler('esx_service:getInServiceCount', function(callback, name)
-	local inServiceCount
 	if name then
-		inServiceCount = GetInServiceCount(name)
-		callback(inServiceCount)
+		cb(GetInServiceCount(serviceAllowedJobs[name] and serviceAllowedJobs[name] or name))
 	else
-		inServiceCount = {}
+		local inServiceCount = {}
 		inServiceCount['police'] = GetInServiceCount('police')
 		inServiceCount['ambulance'] = GetInServiceCount('ambulance')
 		inServiceCount['taxi'] = GetInServiceCount('taxi')
 		inServiceCount['mechanic'] = GetInServiceCount('mechanic')
-		callback(inServiceCount)
+		cb(inServiceCount)
 	end
 end)
 
-ESX.RegisterServerCallback('esx_service:getInServiceCount', function(source, cb)
-	local inServiceCount = {}
-	inServiceCount['police'] = GetInServiceCount('police')
-	inServiceCount['ambulance'] = GetInServiceCount('ambulance')
-	inServiceCount['taxi'] = GetInServiceCount('taxi')
-	inServiceCount['mechanic'] = GetInServiceCount('mechanic')
-	cb(inServiceCount)
+ESX.RegisterServerCallback('esx_service:getInServiceCount', function(source, cb, name)
+	if name then
+		cb(GetInServiceCount(serviceAllowedJobs[name] and serviceAllowedJobs[name] or name))
+	else
+		local inServiceCount = {}
+		inServiceCount['police'] = GetInServiceCount('police')
+		inServiceCount['ambulance'] = GetInServiceCount('ambulance')
+		inServiceCount['taxi'] = GetInServiceCount('taxi')
+		inServiceCount['mechanic'] = GetInServiceCount('mechanic')
+		cb(inServiceCount)
+	end
 end)
 
 local dropped = {}
@@ -310,8 +339,10 @@ local cooldown = false
 
 local multipliers = {
 	['police'] = 8.0,
+	['police2'] = 8.0,
 	['sheriff'] = 8.0,
 	['sheriff2'] = 8.0,
+	['justice'] = 8.0,
 	['ambulance'] = 8.0,
 	['mechanic'] = 6.0,
 	['taxi'] = 6.0,
@@ -409,7 +440,8 @@ RegisterCommand("vesmf", function(source, args, rawCommand)
 	local stuff = "Pasos:"
 	local xPlayer = ESX.GetPlayerFromId(source)
 	Citizen.CreateThread(function()
-		if source == 0 or IsPlayerAceAllowed(source, "staff") or ((xPlayer.job.name == 'police' or xPlayer.job.name == 'sheriff') and xPlayer.job.grade >= 7) or (xPlayer.job.grade_name == 'boss' and (xPlayer.job.name == 'ambulance' or xPlayer.job.name == 'mechanic' or xPlayer.job.name == 'bennys' or xPlayer.job.name == 'chatarra' or xPlayer.job.name == 'taxi')) then
+		local trueJob = serviceAllowedJobs[xPlayer.job.name]
+		if source == 0 or IsPlayerAceAllowed(source, "staff") or (trueJob and (trueJob == 'police' and xPlayer.job.grade >= 7) or (xPlayer.job.grade_name == 'boss' and trueJob == 'ambulance' or trueJob == 'mechanic' or trueJob == 'taxi')) then
 			local trueJobs = {}
 			stuff = stuff .. " 1A"
 			--print("vesmf " .. count); count = count + 1;
