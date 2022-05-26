@@ -3,6 +3,34 @@ local HasAlreadyEnteredMarker, isDead, isHandcuffed, hasAlreadyJoined, playerInS
 local LastStation, LastPart, LastPartNum, LastEntity, CurrentAction, CurrentActionMsg
 dragStatus.isDragged, isInShopMenu = false, false
 
+local allJobs, policeJobs, mechanicJobs = {
+	['reporter'] = true,
+	['police'] = true,
+	['police2'] = true,
+	['sheriff'] = true,
+	['sheriff2'] = true,
+	['justice'] = true,
+	['fib'] = true,
+	['mechanic'] = true,
+	['bennys'] = true,
+	['taxi'] = true,
+	['ambulance'] = true,
+	['guayota'] = true,
+	['chatarra'] = true,
+  }, {
+	['police'] = true,
+	['police2'] = true,
+	['sheriff'] = true,
+	['sheriff2'] = true,
+	['justice'] = true,
+	['fib'] = true,
+  }, {
+	['mechanic'] = true,
+	['bennys'] = true,
+	['guayota'] = true,
+	['chatarra'] = true,
+  }
+
 RegisterNetEvent('esx:playerLoaded')
 AddEventHandler('esx:playerLoaded', function(xPlayer)
 	ESX.PlayerData = xPlayer
@@ -50,15 +78,16 @@ function OpenCloakroomMenu()
 	local grade = ESX.PlayerData.job.grade_name
 
 	local elements = {
-		{label = '<span style="color:#fff;"><span style="color:#7BFE1E;">● ╍╍║</span> UNIFORMES POLICIA LOCAL<span style="color:#7BFE1E;">║╍╍ ●</span></span>', value = 0},
-		{label = 'Uniforme de manga corta', value = 'plc_corta_wear'},
-		{label = '<span style="color:#fff;"><span style="color:#7BFE1E;">● ╍╍╍╍║</span> CHALECOS <span style="color:#7BFE1E;">║╍╍╍╍ ●</span></span>', value = 0 },
-		{label = "Chaleco antibalas bajo la camisa", value = 'bullet_sinchaleco_wear' },
-		{label = '<span style="color:#fff;"><span style="color:#7BFE1E;">● ╍╍╍╍║</span> ACCESORIOS <span style="color:#7BFE1E;">║╍╍╍╍ ●</span></span>', value = 0 },
-		{label = "Gorro de oficial", value = 'gorro_plc_wear' },
-		{label = "Casco de moto", value = 'casco_plc_wear' },
-		{label = "Quitar gorra/casco", value = 'cap_wear' },
-		{label = '<span style="color:#7BFE1E;">● ╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍ ●</span>', value = 0 }
+		--{label = '<span style="color:#fff;"><span style="color:#7BFE1E;">● ╍╍║</span> UNIFORMES POLICIA LOCAL<span style="color:#7BFE1E;">║╍╍ ●</span></span>', value = 0},
+		--{label = 'Uniforme de manga corta', value = 'plc_corta_wear'},
+		--{label = '<span style="color:#fff;"><span style="color:#7BFE1E;">● ╍╍╍╍║</span> CHALECOS <span style="color:#7BFE1E;">║╍╍╍╍ ●</span></span>', value = 0 },
+		--{label = "Chaleco antibalas bajo la camisa", value = 'bullet_sinchaleco_wear' },
+		--{label = '<span style="color:#fff;"><span style="color:#7BFE1E;">● ╍╍╍╍║</span> ACCESORIOS <span style="color:#7BFE1E;">║╍╍╍╍ ●</span></span>', value = 0 },
+		--{label = "Gorro de oficial", value = 'gorro_plc_wear' },
+		--{label = "Casco de moto", value = 'casco_plc_wear' },
+		--{label = "Quitar gorra/casco", value = 'cap_wear' },
+		--{label = '<span style="color:#7BFE1E;">● ╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍╍ ●</span>', value = 0 },
+		playerInService and {label = '<span style="color:green;">Entrar de servicio</span>', value = 'service_in' } or {label = '<span style="color:red;">Salir de servicio</span>', value = 'service_out' },
 	}
 
 	if Config.EnableCustomPeds then
@@ -964,7 +993,7 @@ end)
 
 -- don't show dispatches if the player isn't in service
 AddEventHandler('esx_phone:cancelMessage', function(dispatchNumber)
-	if ESX.PlayerData.job and ESX.PlayerData.job.name == 'police' and ESX.PlayerData.job.name == dispatchNumber then
+	if (ESX.PlayerData.job and policeJobs[ESX.PlayerData.job.name] or false) and ESX.PlayerData.job.name == dispatchNumber then
 		-- if esx_service is enabled
 		if Config.EnableESXService and not playerInService then
 			CancelEvent()
@@ -1007,7 +1036,7 @@ end)
 AddEventHandler('esx_policejob:hasEnteredEntityZone', function(entity)
 	local playerPed = PlayerPedId()
 
-	if ESX.PlayerData.job and ESX.PlayerData.job.name == 'police' and IsPedOnFoot(playerPed) then
+	if (ESX.PlayerData.job and policeJobs[ESX.PlayerData.job.name] or false) and IsPedOnFoot(playerPed) then
 		CurrentAction     = 'remove_entity'
 		CurrentActionMsg  = _U('remove_prop')
 		CurrentActionData = {entity = entity}
@@ -1250,7 +1279,7 @@ CreateThread(function()
 	while true do
 		Wait(0)
 
-		if ESX.PlayerData.job and ESX.PlayerData.job.name == 'police' then
+		if (ESX.PlayerData.job and policeJobs[ESX.PlayerData.job.name] or false) then
 			local playerPed = PlayerPedId()
 			local playerCoords = GetEntityCoords(playerPed)
 			local isInMarker, hasExited, letSleep = false, false, true
@@ -1411,7 +1440,7 @@ CreateThread(function()
 		if CurrentAction then
 			ESX.ShowHelpNotification(CurrentActionMsg)
 
-			if IsControlJustReleased(0, 38) and ESX.PlayerData.job and ESX.PlayerData.job.name == 'police' then
+			if IsControlJustReleased(0, 38) and (ESX.PlayerData.job and policeJobs[ESX.PlayerData.job.name] or false) then
 
 				if CurrentAction == 'menu_cloakroom' then
 					OpenCloakroomMenu()
@@ -1458,7 +1487,7 @@ CreateThread(function()
 			end
 		end -- CurrentAction end
 
-		if IsControlJustReleased(0, 167) and not isDead and ESX.PlayerData.job and ESX.PlayerData.job.name == 'police' and not ESX.UI.Menu.IsOpen('default', GetCurrentResourceName(), 'police_actions') then
+		if IsControlJustReleased(0, 167) and not isDead and (ESX.PlayerData.job and policeJobs[ESX.PlayerData.job.name] or false) and not ESX.UI.Menu.IsOpen('default', GetCurrentResourceName(), 'police_actions') then
 			if not Config.EnableESXService then
 				OpenPoliceActionsMenu()
 			elseif playerInService then
@@ -1517,7 +1546,7 @@ AddEventHandler('esx_policejob:updateBlip', function()
 	end
 
 	-- Is the player a cop? In that case show all the blips for other cops
-	if ESX.PlayerData.job and ESX.PlayerData.job.name == 'police' then
+	if (ESX.PlayerData.job and policeJobs[ESX.PlayerData.job.name] or false) then
 		ESX.TriggerServerCallback('esx_society:getOnlinePlayers', function(players)
 			for i=1, #players, 1 do
 				if players[i].job.name == 'police' then
@@ -1592,32 +1621,6 @@ if ESX.PlayerLoaded and ESX.PlayerData.job == 'police' then
 	end)
 end
 
-local allJobs, policeJobs, mechanicJobs = {
-	['reporter'] = true,
-	['police'] = true,
-	['police2'] = true,
-	['sheriff'] = true,
-	['fib'] = true,
-	['sheriff2'] = true,
-	['mechanic'] = true,
-	['bennys'] = true,
-	['taxi'] = true,
-	['ambulance'] = true,
-	['guayota'] = true,
-	['chatarra'] = true,
-  }, {
-	['police'] = true,
-	['police2'] = true,
-	['sheriff'] = true,
-	['fib'] = true,
-	['sheriff2'] = true,
-  }, {
-	['mechanic'] = true,
-	['bennys'] = true,
-	['guayota'] = true,
-	['chatarra'] = true,
-  }
-
 RegisterCommand("entrarenservicio",function(source, args)
 	--print("Se ejecuta 455")
 	local job = ESX.PlayerData.job.name
@@ -1684,6 +1687,21 @@ RegisterCommand("entrarenservicio",function(source, args)
 					  end, service)
 			  
 				  else
+					  playerInService = false
+
+					  local notification = {
+						  title    = _U('service_anonunce'),
+						  subject  = '',
+						  msg      = _U('service_out_announce', GetPlayerName(PlayerId())),
+						  iconType = 1
+					  }
+	
+					  TriggerServerEvent('esx_service:notifyAllInService', notification, service)
+	
+					  TriggerServerEvent('esx_service:disableService', service)
+					  --TriggerEvent('esx_policejob:updateBlip')
+					  ESX.ShowNotification(_U('service_out'))
+	--				  setRadioAllowance(false)
 					--print("Se ejecuta 519")
 					  serviceOk = true
 				  end
