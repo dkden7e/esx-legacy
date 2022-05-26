@@ -7,8 +7,8 @@ Locales['es'] = {
   ['ems_clothes_ems'] = 'Equipo de ambulancia',
   -- Vehicles
   ['ambulance'] = 'Ambulancia',
-  ['helicopter_prompt'] = 'Presiona ~INPUT_CONTEXT~ para acceder al ~y~Acciones de helicópteros~s~.',
-  ['garage_prompt'] = 'Presiona ~INPUT_CONTEXT~ para acceder al ~y~Acciones de vehículos~s~.',
+  ['helicopter_prompt'] = 'Pulsa ~INPUT_CONTEXT~ para acceder al ~y~Acciones de helicópteros~s~.',
+  ['garage_prompt'] = 'Pulsa ~INPUT_CONTEXT~ para acceder al ~y~Acciones de vehículos~s~.',
   ['garage_title'] = 'Acciones de vehículos',
   ['garage_stored'] = 'Almacenado',
   ['garage_notstored'] = 'No en el garaje',
@@ -42,14 +42,14 @@ Locales['es'] = {
   ['player_not_unconscious'] = 'n\'Estás inconsciente',
   ['player_not_conscious'] = '¡Ese jugador no está consciente!',
   -- Boss Menu
-  ['boss_actions'] = 'Acciones del jefe',
+  ['boss_actions'] = 'Acciones de jefe',
   -- Misc
   ['invalid_amount'] = '~r~Cantidad no válida',
-  ['actions_prompt'] = 'Presiona ~INPUT_CONTEXT~ acceder al ~y~Acciones de ambulancia~s~.',
+  ['actions_prompt'] = 'Pulsa ~INPUT_CONTEXT~ acceder al ~y~Acciones de ambulancia~s~.',
   ['deposit_amount'] = 'Cantidad de fianza depositada',
   ['money_withdraw'] = 'Cantidad de fianza retirada',
-  ['fast_travel'] = 'Presiona ~INPUT_CONTEXT~ para viajar rápido.',
-  ['open_pharmacy'] = 'Presiona ~INPUT_CONTEXT~ para abrir la farmacia.',
+  ['fast_travel'] = 'Pulsa ~INPUT_CONTEXT~ para viajar rápido.',
+  ['open_pharmacy'] = 'Pulsa ~INPUT_CONTEXT~ para abrir la farmacia.',
   ['pharmacy_menu_title'] = 'Farmacia',
   ['pharmacy_take'] = 'tomar <span style="color:blue;">%s</span>',
   ['medikit'] = 'Kit médico',
@@ -71,8 +71,8 @@ Locales['es'] = {
   ['respawn_bleedout_prompt'] = 'Mantén [~b~E~s~] reaparecer',
   ['respawn_bleedout_fine'] = 'Mantén [~b~E~s~] para reaparecer ~g~$%s~s~',
   ['respawn_bleedout_fine_msg'] = 'Tu pagaste ~r~$%s~s~ para reaparecer.',
-  ['distress_send'] = 'Presiona [~b~G~s~] para enviar señal de socorro',
-  ['distress_sent'] = 'Se ha enviado una señal de socorro a las unidades disponibles.',
+  ['distress_send'] = 'Pulsa [~b~F~s~] para enviar un ~r~/auxilio~s~ automático.',
+  ['distress_sent'] = 'Se ha enviado un ~r~/auxilio~s~ automático.',
   
   -- Revive
   ['revive_help'] = 'Revivir un jugador',
