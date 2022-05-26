@@ -354,16 +354,18 @@ CreateThread(function()
 
 		for hospitalNum,hospital in pairs(Config.Hospitals) do
 			-- Fast Travels
-			for k,v in ipairs(hospital.FastTravels) do
-				local distance = #(playerCoords - v.From)
+			if type(hospital.FastTravels) == "table" and #hospital.FastTravels > 0 then
+				for k,v in ipairs(hospital.FastTravels) do
+					local distance = #(playerCoords - v.From)
 
-				if distance < Config.DrawDistance then
-					sleep = 0
-					DrawMarker(v.Marker.type, v.From, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, v.Marker.x, v.Marker.y, v.Marker.z, v.Marker.r, v.Marker.g, v.Marker.b, v.Marker.a, false, false, 2, v.Marker.rotate, nil, nil, false)
-					
+					if distance < Config.DrawDistance then
+						sleep = 0
+						DrawMarker(v.Marker.type, v.From, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, v.Marker.x, v.Marker.y, v.Marker.z, v.Marker.r, v.Marker.g, v.Marker.b, v.Marker.a, false, false, 2, v.Marker.rotate, nil, nil, false)
 
-					if distance < v.Marker.x then
-						FastTravel(v.To.coords, v.To.heading)
+
+						if distance < v.Marker.x then
+							FastTravel(v.To.coords, v.To.heading)
+						end
 					end
 				end
 			end
