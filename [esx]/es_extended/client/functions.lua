@@ -44,6 +44,8 @@ end
 function ESX.SearchInventory(items, count)
 	if type(items) == 'string' then items = {items} end
 
+	if not items or not ESX.PlayerData then return 0 end
+
 	local returnData = {}
 	local itemCount = #items
 
@@ -399,6 +401,7 @@ function ESX.Game.DeleteObject(object)
 end
 
 function ESX.Game.SpawnVehicle(vehicle, coords, heading, cb, networked)
+	if not coords then cb() end
 	local model = (type(vehicle) == 'number' and vehicle or GetHashKey(vehicle))
 	local vector = type(coords) == "vector3" and coords or vec(coords.x, coords.y, coords.z)
 	networked = networked == nil and true or networked
@@ -429,6 +432,7 @@ function ESX.Game.SpawnVehicle(vehicle, coords, heading, cb, networked)
 end
 
 function ESX.Game.SpawnLocalVehicle(vehicle, coords, heading, cb)
+	if not coords then cb() end
 	ESX.Game.SpawnVehicle(vehicle, coords, heading, cb, false)
 end
 
