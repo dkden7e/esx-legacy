@@ -1,3 +1,7 @@
+QueServer = GetConvar("server_number", "1")
+local isTencity = (QueServer == "TENCITY")
+local divisa = GetConvar("server_divisa", "$")
+
 ESX.RegisterCommand('setcoords', 'staff2', function(xPlayer, args, showError)
 	xPlayer.setCoords({x = args.x, y = args.y, z = args.z})
 end, false, {help = _U('command_setcoords'), validate = true, arguments = {
@@ -9,6 +13,14 @@ end, false, {help = _U('command_setcoords'), validate = true, arguments = {
 ESX.RegisterCommand('setjob', 'staff2', function(xPlayer, args, showError)
 	if ESX.DoesJobExist(args.job, args.grade) then
 		args.playerId.setJob(args.job, args.grade)
+		local job = ESX.Jobs[args.job]
+		local jobLabel, jobGrade = (job and job.label or false), (job and (job.grades[args.grade] and job.grades[args.grade].label or false) or false)
+		if jobLabel and jobGrade then
+			local hora = os.date("%X")
+			local discord1 = string.gsub(xPlayer.discord, "discord:", "")
+			if discord1 == "" then discord1 = "_Discord no disponible_" else discord1 = '<@' .. discord1 .. '>' end
+			TriggerEvent('DiscordBot:ToDiscord', GetConvar("webhook_staffcmd", "1"), '[🤖] ' .. (isTencity and 'TENDERETE CITY' or 'MANCOS.ES') .. ' ~ ACCIONES DEL STAFF (HORA: ' .. hora .. ')', xPlayer.name .. " [ID:" .. xPlayer.source .. "] (" .. discord1 .. ") ha cambiado el trabajo del usuario " .. args.playerId.name .. " [ID:" .. args.playerId.source .. "] a  (`/setjob " .. args.job .. " " .. args.grade .. "`).", 'steam', true, xPlayer.source)
+		end
 	else
 		showError(_U('command_setjob_invalid'))
 	end
@@ -32,14 +44,21 @@ ESX.RegisterCommand('car', 'staff3', function(xPlayer, args, showError)
 		until GetVehiclePedIsIn(playerPed, false) ~= 0 or timeout < 1
 		Citizen.Wait(100)
 		local netID = NetworkGetNetworkIdFromEntity(car)
-		xPlayer.triggerEvent('cd_garage:AddKeys2', NetworkGetNetworkIdFromEntity(car))
+		if netID then
+			xPlayer.triggerEvent('cd_garage:AddKeys2', netID)
+		end
 	end)
+
+	local hora = os.date("%X")
+	local discord1 = string.gsub(xPlayer.discord, "discord:", "")
+	if discord1 == "" then discord1 = "_Discord no disponible_" else discord1 = '<@' .. discord1 .. '>' end
+	TriggerEvent('DiscordBot:ToDiscord', GetConvar("webhook_staffcmd", "1"), '[🤖] ' .. (isTencity and 'TENDERETE CITY' or 'MANCOS.ES') .. ' ~ ACCIONES DEL STAFF (HORA: ' .. hora .. ')', xPlayer.name .. " [ID:" .. xPlayer.source .. "] (" .. discord1 .. ") ha usado **`/car " .. args.car .. "`** para  spawnear un vehículo.", 'steam', true, xPlayer.source)
 
 end, false, {help = _U('command_car'), validate = false, arguments = {
 	{name = 'car', help = _U('command_car_car'), type = 'any'}
 }})
 
-ESX.RegisterCommand({'cardel', 'dv'}, 'admin', function(xPlayer, args, showError)
+ESX.RegisterCommand({'dv'}, 'admin', function(xPlayer, args, showError)
 	local playerPed = GetPlayerPed(xPlayer.source)
 	local vehicle = GetVehiclePedIsIn(playerPed)
 
@@ -51,13 +70,48 @@ ESX.RegisterCommand({'cardel', 'dv'}, 'admin', function(xPlayer, args, showError
 			DeleteEntity(vehicle[i].entity)
 		end
 	end
+
+	local hora = os.date("%X")
+	local discord1 = string.gsub(xPlayer.discord, "discord:", "")
+	if discord1 == "" then discord1 = "_Discord no disponible_" else discord1 = '<@' .. discord1 .. '>' end
+	TriggerEvent('DiscordBot:ToDiscord', GetConvar("webhook_staffcmd", "1"), '[🤖] ' .. (isTencity and 'TENDERETE CITY' or 'MANCOS.ES') .. ' ~ ACCIONES DEL STAFF (HORA: ' .. hora .. ')', xPlayer.name .. " [ID:" .. xPlayer.source .. "] (" .. discord1 .. ") ha usado **`/dv" .. (tonumber(args.radius) and (" " .. args.radius) or "") .. "`** para eliminar vehículo/s dentro del radio elegido en las coordenadas `" .. tostring(GetEntityCoords(playerPed)) .. "`.", 'steam', true, xPlayer.source)
 end, false, {help = _U('command_cardel'), validate = false, arguments = {
 	{name = 'radius', help = _U('command_cardel_radius'), type = 'any'}
+}})
+
+ESX.RegisterCommand({'dv2'}, 'admin', function(xPlayer, args, showError)
+	local playerPed = GetPlayerPed(args.playerId.source)
+	local vehicle = GetVehiclePedIsIn(playerPed)
+
+	local count = 0
+	if vehicle ~= 0 then
+		DeleteEntity(vehicle)
+	else
+		vehicle = ESX.OneSync.GetVehiclesInArea(GetEntityCoords(playerPed), tonumber(args.radius) or 3)
+		count = #vehicle
+		for i = 1, count do
+			DeleteEntity(vehicle[i].entity)
+		end
+	end
+
+	local hora = os.date("%X")
+	local discord1, discord2 = string.gsub(xPlayer.discord, "discord:", ""), string.gsub(args.playerId.discord, "discord:", "")
+	if discord1 == "" then discord1 = "_Discord no disponible_" else discord1 = '<@' .. discord1 .. '>' end
+	if discord2 == "" then discord2 = "_Discord no disponible_" else discord2 = '<@' .. discord2 .. '>' end
+	TriggerEvent('DiscordBot:ToDiscord', GetConvar("webhook_staffcmd", "1"), '[🤖] ' .. (isTencity and 'TENDERETE CITY' or 'MANCOS.ES') .. ' ~ ACCIONES DEL STAFF (HORA: ' .. hora .. ')', xPlayer.name .. " [ID:" .. xPlayer.source .. "] (" .. discord1 .. ") ha usado **`/dv2 " .. args.playerId.source .. "`** para eliminar " .. ((count > 0) and (count .. " vehículos cercanos al") or "el vehículo del") .. " usuario " .. args.playerId.name .. " [ID:" .. args.playerId.source .. "] (" .. discord2 .. ") en las coordenadas `" .. tostring(GetEntityCoords(playerPed)) .. "`.", 'steam', true, xPlayer.source)
+end, false, {help = _U('command_cardel'), validate = true, arguments = {
+	{name = 'playerId', help = _U('commandgeneric_playerid'), type = 'player'}
 }})
 
 ESX.RegisterCommand('setaccountmoney', 'admin', function(xPlayer, args, showError)
 	if args.playerId.getAccount(args.account) then
 		args.playerId.setAccountMoney(args.account, args.amount)
+
+		local hora = os.date("%X")
+		local discord1, discord2 = string.gsub(xPlayer.discord, "discord:", ""), string.gsub(args.playerId.discord, "discord:", "")
+		if discord1 == "" then discord1 = "_Discord no disponible_" else discord1 = '<@' .. discord1 .. '>' end
+		if discord2 == "" then discord2 = "_Discord no disponible_" else discord2 = '<@' .. discord2 .. '>' end
+		TriggerEvent('DiscordBot:ToDiscord', GetConvar("webhook_staffcmd", "1"), '[🤖] ' .. (isTencity and 'TENDERETE CITY' or 'MANCOS.ES') .. ' ~ ACCIONES DEL STAFF (HORA: ' .. hora .. ')', xPlayer.name .. " [ID:" .. xPlayer.source .. "] (" .. discord1 .. ") ha usado **`/setaccountmoney " .. args.playerId.source .. " " .. args.account .. " " .. args.amount .. "`** para asignar " .. args.amount .. divisa .. " a la cuenta " .. args.account .. " del usuario " .. args.playerId.name .. " [ID:" .. args.playerId.source .. "] (" .. discord2 .. ").", 'steam', true, xPlayer.source)
 	else
 		showError(_U('command_giveaccountmoney_invalid'))
 	end
@@ -69,7 +123,14 @@ end, true, {help = _U('command_setaccountmoney'), validate = true, arguments = {
 
 ESX.RegisterCommand('giveaccountmoney', 'admin', function(xPlayer, args, showError)
 	if args.playerId.getAccount(args.account) then
+		local prev = args.playerId.getAccount(args.account).money
 		args.playerId.addAccountMoney(args.account, args.amount)
+
+		local hora = os.date("%X")
+		local discord1, discord2 = string.gsub(xPlayer.discord, "discord:", ""), string.gsub(args.playerId.discord, "discord:", "")
+		if discord1 == "" then discord1 = "_Discord no disponible_" else discord1 = '<@' .. discord1 .. '>' end
+		if discord2 == "" then discord2 = "_Discord no disponible_" else discord2 = '<@' .. discord2 .. '>' end
+		TriggerEvent('DiscordBot:ToDiscord', GetConvar("webhook_staffcmd", "1"), '[🤖] ' .. (isTencity and 'TENDERETE CITY' or 'MANCOS.ES') .. ' ~ ACCIONES DEL STAFF (HORA: ' .. hora .. ')', xPlayer.name .. " [ID:" .. xPlayer.source .. "] (" .. discord1 .. ") ha usado **`/giveaccountmoney " .. args.playerId.source .. " " .. args.account .. " " .. args.amount .. "`** para sumar **`" .. args.amount .. divisa .. "`** a la cuenta **`" .. args.account .. "`** del usuario " .. args.playerId.name .. " [ID:" .. args.playerId.source .. "] (" .. discord2 .. "), que previamente tenía **`" .. prev .. divisa .. "`**.", 'steam', true, xPlayer.source)
 	else
 		showError(_U('command_giveaccountmoney_invalid'))
 	end
@@ -129,6 +190,10 @@ end, false, {help = _U('command_clear')})
 
 ESX.RegisterCommand({'clearall', 'clsall'}, 'staff3', function(xPlayer, args, showError)
 	TriggerClientEvent('chat:clear', -1)
+	local hora = os.date("%X")
+	local discord1 = string.gsub(xPlayer.discord, "discord:", "")
+	if discord1 == "" then discord1 = "_Discord no disponible_" else discord1 = '<@' .. discord1 .. '>' end
+	TriggerEvent('DiscordBot:ToDiscord', GetConvar("webhook_staffcmd", "1"), '[🤖] ' .. (isTencity and 'TENDERETE CITY' or 'MANCOS.ES') .. ' ~ ACCIONES DEL STAFF (HORA: ' .. hora .. ')', xPlayer.name .. " [ID:" .. xPlayer.source .. "] (" .. discord1 .. ") ha usado **`/clearall`** para limpiar los chats de todos los jugadores.", 'steam', true, xPlayer.source)
 end, false, {help = _U('command_clearall')})
 
 if not Config.OxInventory then
@@ -155,6 +220,11 @@ ESX.RegisterCommand('setgroup', 'admin', function(xPlayer, args, showError)
 	if not args.playerId then args.playerId = xPlayer.source end
 	if args.group == "superadmin" then args.group = "admin" end
 	args.playerId.setGroup(args.group)
+	local hora = os.date("%X")
+	local discord1, discord2 = string.gsub(xPlayer.discord, "discord:", ""), string.gsub(args.playerId.discord, "discord:", "")
+	if discord1 == "" then discord1 = "_Discord no disponible_" else discord1 = '<@' .. discord1 .. '>' end
+	if discord2 == "" then discord2 = "_Discord no disponible_" else discord2 = '<@' .. discord2 .. '>' end
+	TriggerEvent('DiscordBot:ToDiscord', GetConvar("webhook_staffcmd", "1"), '[🤖] ' .. (isTencity and 'TENDERETE CITY' or 'MANCOS.ES') .. ' ~ ACCIONES DEL STAFF (HORA: ' .. hora .. ')', xPlayer.name .. " [ID:" .. xPlayer.source .. "] (" .. discord1 .. ") ha usado **`/setgroup " .. args.playerId.source .. " " .. args.group .. "`** para asignar el grupo " .. args.group .. " al usuario " .. args.playerId.name .. " [ID:" .. args.playerId.source .. "] (" .. discord2 .. ").", 'steam', true, xPlayer.source)
 end, true, {help = _U('command_setgroup'), validate = true, arguments = {
 	{name = 'playerId', help = _U('commandgeneric_playerid'), type = 'player'},
 	{name = 'group', help = _U('command_setgroup_group'), type = 'string'},
@@ -196,11 +266,20 @@ end, true)
 
 ESX.RegisterCommand('tpm', "staff1", function(xPlayer, args, showError)
 	xPlayer.triggerEvent("esx:tpm")
+	local hora = os.date("%X")
+	local discord1 = string.gsub(xPlayer.discord, "discord:", "")
+	if discord1 == "" then discord1 = "_Discord no disponible_" else discord1 = '<@' .. discord1 .. '>' end
+	TriggerEvent('DiscordBot:ToDiscord', GetConvar("webhook_staffcmd", "1"), '[🤖] ' .. (isTencity and 'TENDERETE CITY' or 'MANCOS.ES') .. ' ~ ACCIONES DEL STAFF (HORA: ' .. hora .. ')', xPlayer.name .. " [ID:" .. xPlayer.source .. "] (" .. discord1 .. ") ha usado **`/tpm`** para teletransportarse a un marcador.", 'steam', true, xPlayer.source)
 end, true)
 
 ESX.RegisterCommand('goto', "admin", function(xPlayer, args, showError)
 		local targetCoords = args.playerId.getCoords()
 		xPlayer.setCoords(targetCoords)
+		local hora = os.date("%X")
+		local discord1, discord2 = string.gsub(xPlayer.discord, "discord:", ""), string.gsub(args.playerId.discord, "discord:", "")
+		if discord1 == "" then discord1 = "_Discord no disponible_" else discord1 = '<@' .. discord1 .. '>' end
+		if discord2 == "" then discord2 = "_Discord no disponible_" else discord2 = '<@' .. discord2 .. '>' end
+		TriggerEvent('DiscordBot:ToDiscord', GetConvar("webhook_staffcmd", "1"), '[🤖] ' .. (isTencity and 'TENDERETE CITY' or 'MANCOS.ES') .. ' ~ ACCIONES DEL STAFF (HORA: ' .. hora .. ')', xPlayer.name .. " [ID:" .. xPlayer.source .. "] (" .. discord1 .. ") ha usado **`/goto " .. args.playerId.source .. "`** para teletransportarse al usuario " .. args.playerId.name .. " [ID:" .. args.playerId.source .. "] (" .. discord2 .. ") (coordenadas `" .. tostring(GetEntityCoords(GetPlayerPed(args.playerId.source))) .. "`).", 'steam', true, xPlayer.source)
 end, true, {help = _U('goto'), validate = true, arguments = {
 	{name = 'playerId', help = _U('commandgeneric_playerid'), type = 'player'}
 }})
@@ -208,24 +287,44 @@ end, true, {help = _U('goto'), validate = true, arguments = {
 ESX.RegisterCommand('bring', "admin", function(xPlayer, args, showError)
 		local playerCoords = xPlayer.getCoords()
 		args.playerId.setCoords(playerCoords)
+		local hora = os.date("%X")
+		local discord1, discord2 = string.gsub(xPlayer.discord, "discord:", ""), string.gsub(args.playerId.discord, "discord:", "")
+		if discord1 == "" then discord1 = "_Discord no disponible_" else discord1 = '<@' .. discord1 .. '>' end
+		if discord2 == "" then discord2 = "_Discord no disponible_" else discord2 = '<@' .. discord2 .. '>' end
+		TriggerEvent('DiscordBot:ToDiscord', GetConvar("webhook_staffcmd", "1"), '[🤖] ' .. (isTencity and 'TENDERETE CITY' or 'MANCOS.ES') .. ' ~ ACCIONES DEL STAFF (HORA: ' .. hora .. ')', xPlayer.name .. " [ID:" .. xPlayer.source .. "] (" .. discord1 .. ") ha usado **`/goto " .. args.playerId.source .. "`** para teletransportar hacia su localización (coordenadas `" .. tostring(GetEntityCoords(GetPlayerPed(xPlayer.source))) .. "`) al usuario " .. args.playerId.name .. " [ID:" .. args.playerId.source .. "] (" .. discord2 .. ").", 'steam', true, xPlayer.source)
 end, true, {help = _U('bring'), validate = true, arguments = {
 	{name = 'playerId', help = _U('commandgeneric_playerid'), type = 'player'}
 }})
 
 ESX.RegisterCommand('kill', "admin", function(xPlayer, args, showError)
 	args.playerId.triggerEvent("esx:killPlayer")
+	local hora = os.date("%X")
+	local discord1, discord2 = string.gsub(xPlayer.discord, "discord:", ""), string.gsub(args.playerId.discord, "discord:", "")
+	if discord1 == "" then discord1 = "_Discord no disponible_" else discord1 = '<@' .. discord1 .. '>' end
+	if discord2 == "" then discord2 = "_Discord no disponible_" else discord2 = '<@' .. discord2 .. '>' end
+	TriggerEvent('DiscordBot:ToDiscord', GetConvar("webhook_staffcmd", "1"), '[🤖] ' .. (isTencity and 'TENDERETE CITY' or 'MANCOS.ES') .. ' ~ ACCIONES DEL STAFF (HORA: ' .. hora .. ')', xPlayer.name .. " [ID:" .. xPlayer.source .. "] (" .. discord1 .. ") ha usado **`/kill " .. args.playerId.source .. "`** para matar al usuario " .. args.playerId.name .. " [ID:" .. args.playerId.source .. "] (" .. discord2 .. ") (coordenadas `" .. tostring(GetEntityCoords(GetPlayerPed(args.playerId.source))) .. "`).", 'steam', true, xPlayer.source)
 end, true, {help = _U('kill'), validate = true, arguments = {
 {name = 'playerId', help = _U('commandgeneric_playerid'), type = 'player'}
 }})
 
 ESX.RegisterCommand('freeze', "admin", function(xPlayer, args, showError)
 	args.playerId.triggerEvent('esx:freezePlayer', "freeze")
+	local hora = os.date("%X")
+	local discord1, discord2 = string.gsub(xPlayer.discord, "discord:", ""), string.gsub(args.playerId.discord, "discord:", "")
+	if discord1 == "" then discord1 = "_Discord no disponible_" else discord1 = '<@' .. discord1 .. '>' end
+	if discord2 == "" then discord2 = "_Discord no disponible_" else discord2 = '<@' .. discord2 .. '>' end
+	TriggerEvent('DiscordBot:ToDiscord', GetConvar("webhook_staffcmd", "1"), '[🤖] ' .. (isTencity and 'TENDERETE CITY' or 'MANCOS.ES') .. ' ~ ACCIONES DEL STAFF (HORA: ' .. hora .. ')', xPlayer.name .. " [ID:" .. xPlayer.source .. "] (" .. discord1 .. ") ha usado **`/freeze " .. args.playerId.source .. "`** para (des?)congelar al usuario " .. args.playerId.name .. " [ID:" .. args.playerId.source .. "] (" .. discord2 .. ") (coordenadas `" .. tostring(GetEntityCoords(GetPlayerPed(args.playerId.source))) .. "`).", 'steam', true, xPlayer.source)
 end, true, {help = _U('kill'), validate = true, arguments = {
 {name = 'playerId', help = _U('commandgeneric_playerid'), type = 'player'}
 }})
 
 ESX.RegisterCommand('unfreeze', "admin", function(xPlayer, args, showError)
 	args.playerId.triggerEvent('esx:freezePlayer', "unfreeze")
+	local hora = os.date("%X")
+	local discord1, discord2 = string.gsub(xPlayer.discord, "discord:", ""), string.gsub(args.playerId.discord, "discord:", "")
+	if discord1 == "" then discord1 = "_Discord no disponible_" else discord1 = '<@' .. discord1 .. '>' end
+	if discord2 == "" then discord2 = "_Discord no disponible_" else discord2 = '<@' .. discord2 .. '>' end
+	TriggerEvent('DiscordBot:ToDiscord', GetConvar("webhook_staffcmd", "1"), '[🤖] ' .. (isTencity and 'TENDERETE CITY' or 'MANCOS.ES') .. ' ~ ACCIONES DEL STAFF (HORA: ' .. hora .. ')', xPlayer.name .. " [ID:" .. xPlayer.source .. "] (" .. discord1 .. ") ha usado **`/unfreeze " .. args.playerId.source .. "`** para **des**congelar al usuario " .. args.playerId.name .. " [ID:" .. args.playerId.source .. "] (" .. discord2 .. ") (coordenadas `" .. tostring(GetEntityCoords(GetPlayerPed(args.playerId.source))) .. "`).", 'steam', true, xPlayer.source)
 end, true, {help = _U('kill'), validate = true, arguments = {
 {name = 'playerId', help = _U('commandgeneric_playerid'), type = 'player'}
 }})
