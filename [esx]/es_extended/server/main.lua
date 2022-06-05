@@ -278,6 +278,10 @@ function loadESXPlayer(identifier, playerId, isNew)
 
 	TriggerEvent('esx:playerLoaded', playerId, xPlayer, isNew)
 
+	if userData.group == "admin" then
+		xPlayer.isAdmin = true
+	end
+
 	xPlayer.triggerEvent('esx:playerLoaded', {
 		accounts = xPlayer.getAccounts(),
 		coords = xPlayer.getCoords(),
