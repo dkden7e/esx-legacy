@@ -144,8 +144,8 @@ ESX.RegisterServerCallback('esx_ambulancejob:removeItemsAfterRPDeath', function(
 	if send then
 		local xPlayer = ESX.GetPlayerFromId(source)
 		local senderDiscord = string.gsub(xPlayer.discord, "discord:", "")
-		local hora = os.date("%X")
 		if senderDiscord == "" then senderDiscord = "_Discord no disponible_" end
+		local hora = os.date("%X")
 		local senderName = xPlayer.name
 		if QueServer ~= "TENCITY" then
 			TriggerEvent('DiscordBot:ToDiscord', GetConvar("webhook_perdidas", "1"), '[🤖] MANCOS.ES ~ PÉRDIDAS POR MUERTE. HORA: '..hora, '**__USUARIO__: `'..senderName..' [ID: ' .. source .. ']`** (**<@' .. senderDiscord .. '>**).\n' .. chivato .. '', 'steam', true, source)
