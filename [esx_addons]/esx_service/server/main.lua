@@ -269,7 +269,8 @@ end)
 
 RegisterServerEvent('esx_service:getInServiceList')
 AddEventHandler('esx_service:getInServiceList', function(callback, name)
-    callback(InService[serviceAllowedJobs[name] and serviceAllowedJobs[name] or name])
+	local result = InService[serviceAllowedJobs[name] and serviceAllowedJobs[name] or name]
+    callback(result or {})
 end)
 
 
