@@ -6,7 +6,7 @@ if ESX.GetConfig().OxInventory then
 			for i=1, #stashes do
 				local stash = stashes[i]
 				local jobStash = stash.name:find('society') and string.sub(stash.name, 9)
-				exports.ox_inventory:RegisterStash(stash.name, stash.label, 100, (tonumber(stash.size) and tonumber(stash.size) or 200000), stash.shared == 0 and true or false, jobStash)
+				exports.ox_inventory:RegisterStash(stash.name, stash.label, 100, (tonumber(stash.size) and tonumber(stash.size) or 1000000), stash.shared == 0 and true or false, jobStash)
 			end
 		end
 	end)
